@@ -10,30 +10,42 @@ namespace Steamworks
 	/// <summary>
 	/// Undocumented Parental Settings
 	/// </summary>
-	public class SteamFriends : SteamClientClass<SteamFriends>
+	public static class SteamFriends
 	{
-		internal static ISteamFriends Internal => Interface as ISteamFriends;
-
-		internal override void InitializeInterface( bool server )
+		static ISteamFriends _internal;
+		internal static ISteamFriends Internal
 		{
-			SetInterface( server, new ISteamFriends( server ) );
+			get
+			{
+				SteamClient.ValidCheck();
 
-			richPresence = new Dictionary<string, string>();
+				if ( _internal == null )
+				{
+					_internal = new ISteamFriends();
+					_internal.Init();
 
-			InstallEvents();
+					richPresence = new Dictionary<string, string>();
+				}
+
+				return _internal;
+			}
+		}
+		internal static void Shutdown()
+		{
+			_internal = null;
 		}
 
 		static Dictionary<string, string> richPresence;
 
-		internal void InstallEvents()
+		internal static void InstallEvents()
 		{
-			Dispatch.Install<PersonaStateChange_t>( x => OnPersonaStateChange?.Invoke( new Friend( x.SteamID ) ) );
-			Dispatch.Install<GameRichPresenceJoinRequested_t>( x => OnGameRichPresenceJoinRequested?.Invoke( new Friend( x.SteamIDFriend), x.ConnectUTF8() ) );
-			Dispatch.Install<GameConnectedFriendChatMsg_t>( OnFriendChatMessage );
-			Dispatch.Install<GameOverlayActivated_t>( x => OnGameOverlayActivated?.Invoke( x.Active != 0 ) );
-			Dispatch.Install<GameServerChangeRequested_t>( x => OnGameServerChangeRequested?.Invoke( x.ServerUTF8(), x.PasswordUTF8() ) );
-			Dispatch.Install<GameLobbyJoinRequested_t>( x => OnGameLobbyJoinRequested?.Invoke( new Lobby( x.SteamIDLobby ), x.SteamIDFriend ) );
-			Dispatch.Install<FriendRichPresenceUpdate_t>( x => OnFriendRichPresenceUpdate?.Invoke( new Friend( x.SteamIDFriend ) ) );
+			FriendStateChange_t.Install( x => OnPersonaStateChange?.Invoke( new Friend( x.SteamID ) ) );
+			GameRichPresenceJoinRequested_t.Install( x => OnGameRichPresenceJoinRequested?.Invoke( new Friend( x.SteamIDFriend), x.ConnectUTF8() ) );
+			GameConnectedFriendChatMsg_t.Install( OnFriendChatMessage );
+			GameOverlayActivated_t.Install( x => OnGameOverlayActivated?.Invoke() );
+			GameServerChangeRequested_t.Install( x => OnGameServerChangeRequested?.Invoke( x.ServerUTF8(), x.PasswordUTF8() ) );
+			GameLobbyJoinRequested_t.Install( x => OnGameLobbyJoinRequested?.Invoke( new Lobby( x.SteamIDLobby ), x.SteamIDFriend ) );
+			FriendRichPresenceUpdate_t.Install( x => OnFriendRichPresenceUpdate?.Invoke( new Friend( x.SteamIDFriend ) ) );
 		}
 
 		/// <summary>
@@ -58,7 +70,7 @@ namespace Steamworks
 		/// Posted when game overlay activates or deactivates
 		///	the game can use this to be pause or resume single player games
 		/// </summary>
-		public static event Action<bool> OnGameOverlayActivated;
+		public static event Action OnGameOverlayActivated;
 
 		/// <summary>
 		/// Called when the user tries to join a different game server from their friends list
@@ -100,7 +112,7 @@ namespace Steamworks
 			}
 		}
 		
-		private static IEnumerable<Friend> GetFriendsWithFlag(FriendFlags flag)
+		public static IEnumerable<Friend> GetFriendsWithFlag(FriendFlags flag)
 		{
 			for ( int i=0; i<Internal.GetFriendCount( (int)flag); i++ )
 			{
@@ -116,26 +128,6 @@ namespace Steamworks
 		public static IEnumerable<Friend> GetBlocked()
 		{
 			return GetFriendsWithFlag(FriendFlags.Blocked);
-		}
-
-		public static IEnumerable<Friend> GetFriendsRequested()
-		{
-			return GetFriendsWithFlag( FriendFlags.FriendshipRequested );
-		}
-
-		public static IEnumerable<Friend> GetFriendsClanMembers()
-		{
-			return GetFriendsWithFlag( FriendFlags.ClanMember );
-		}
-
-		public static IEnumerable<Friend> GetFriendsOnGameServer()
-		{
-			return GetFriendsWithFlag( FriendFlags.OnGameServer );
-		}
-
-		public static IEnumerable<Friend> GetFriendsRequestingFriendship()
-		{
-			return GetFriendsWithFlag( FriendFlags.RequestingFriendship );
 		}
 
 		public static IEnumerable<Friend> GetPlayedWith()
@@ -306,36 +298,5 @@ namespace Steamworks
 			}
 		}
 
-		public static async Task<bool> IsFollowing(SteamId steamID)
-		{
-			var r = await Internal.IsFollowing(steamID);
-			return r.Value.IsFollowing;
-		}
-
-		public static async Task<int> GetFollowerCount(SteamId steamID)
-		{
-			var r = await Internal.GetFollowerCount(steamID);
-			return r.Value.Count;
-		}
-
-        public static async Task<SteamId[]> GetFollowingList()
-        {
-            int resultCount = 0;
-            var steamIds = new List<SteamId>();
-
-            FriendsEnumerateFollowingList_t? result;
-
-            do
-            {
-                if ( (result = await Internal.EnumerateFollowingList((uint)resultCount)) != null)
-                {
-                    resultCount += result.Value.ResultsReturned;
-
-                    Array.ForEach(result.Value.GSteamID, id => { if (id > 0) steamIds.Add(id); });
-                }
-            } while (result != null && resultCount < result.Value.TotalResultCount);
-
-            return steamIds.ToArray();
-        }
-    }
+	}
 }

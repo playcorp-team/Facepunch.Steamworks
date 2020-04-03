@@ -9,20 +9,29 @@ namespace Steamworks
 {
 	internal class ISteamVideo : SteamInterface
 	{
+		public override string InterfaceName => "STEAMVIDEO_INTERFACE_V002";
 		
-		internal ISteamVideo( bool IsGameServer )
+		public override void InitInternals()
 		{
-			SetupInterface( IsGameServer );
+			_GetVideoURL = Marshal.GetDelegateForFunctionPointer<FGetVideoURL>( Marshal.ReadIntPtr( VTable, Platform.MemoryOffset( 0 ) ) );
+			_IsBroadcasting = Marshal.GetDelegateForFunctionPointer<FIsBroadcasting>( Marshal.ReadIntPtr( VTable, Platform.MemoryOffset( 8 ) ) );
+			_GetOPFSettings = Marshal.GetDelegateForFunctionPointer<FGetOPFSettings>( Marshal.ReadIntPtr( VTable, Platform.MemoryOffset( 16 ) ) );
+			_GetOPFStringForApp = Marshal.GetDelegateForFunctionPointer<FGetOPFStringForApp>( Marshal.ReadIntPtr( VTable, Platform.MemoryOffset( 24 ) ) );
+		}
+		internal override void Shutdown()
+		{
+			base.Shutdown();
+			
+			_GetVideoURL = null;
+			_IsBroadcasting = null;
+			_GetOPFSettings = null;
+			_GetOPFStringForApp = null;
 		}
 		
-		[DllImport( Platform.LibraryName, EntryPoint = "SteamAPI_SteamVideo_v002", CallingConvention = Platform.CC)]
-		internal static extern IntPtr SteamAPI_SteamVideo_v002();
-		public override IntPtr GetUserInterfacePointer() => SteamAPI_SteamVideo_v002();
-		
-		
 		#region FunctionMeta
-		[DllImport( Platform.LibraryName, EntryPoint = "SteamAPI_ISteamVideo_GetVideoURL", CallingConvention = Platform.CC)]
-		private static extern void _GetVideoURL( IntPtr self, AppId unVideoAppID );
+		[UnmanagedFunctionPointer( Platform.MemberConvention )]
+		private delegate void FGetVideoURL( IntPtr self, AppId unVideoAppID );
+		private FGetVideoURL _GetVideoURL;
 		
 		#endregion
 		internal void GetVideoURL( AppId unVideoAppID )
@@ -31,9 +40,10 @@ namespace Steamworks
 		}
 		
 		#region FunctionMeta
-		[DllImport( Platform.LibraryName, EntryPoint = "SteamAPI_ISteamVideo_IsBroadcasting", CallingConvention = Platform.CC)]
+		[UnmanagedFunctionPointer( Platform.MemberConvention )]
 		[return: MarshalAs( UnmanagedType.I1 )]
-		private static extern bool _IsBroadcasting( IntPtr self, ref int pnNumViewers );
+		private delegate bool FIsBroadcasting( IntPtr self, ref int pnNumViewers );
+		private FIsBroadcasting _IsBroadcasting;
 		
 		#endregion
 		internal bool IsBroadcasting( ref int pnNumViewers )
@@ -43,8 +53,9 @@ namespace Steamworks
 		}
 		
 		#region FunctionMeta
-		[DllImport( Platform.LibraryName, EntryPoint = "SteamAPI_ISteamVideo_GetOPFSettings", CallingConvention = Platform.CC)]
-		private static extern void _GetOPFSettings( IntPtr self, AppId unVideoAppID );
+		[UnmanagedFunctionPointer( Platform.MemberConvention )]
+		private delegate void FGetOPFSettings( IntPtr self, AppId unVideoAppID );
+		private FGetOPFSettings _GetOPFSettings;
 		
 		#endregion
 		internal void GetOPFSettings( AppId unVideoAppID )
@@ -53,9 +64,10 @@ namespace Steamworks
 		}
 		
 		#region FunctionMeta
-		[DllImport( Platform.LibraryName, EntryPoint = "SteamAPI_ISteamVideo_GetOPFStringForApp", CallingConvention = Platform.CC)]
+		[UnmanagedFunctionPointer( Platform.MemberConvention )]
 		[return: MarshalAs( UnmanagedType.I1 )]
-		private static extern bool _GetOPFStringForApp( IntPtr self, AppId unVideoAppID, IntPtr pchBuffer, ref int pnBufferSize );
+		private delegate bool FGetOPFStringForApp( IntPtr self, AppId unVideoAppID, IntPtr pchBuffer, ref int pnBufferSize );
+		private FGetOPFStringForApp _GetOPFStringForApp;
 		
 		#endregion
 		internal bool GetOPFStringForApp( AppId unVideoAppID, out string pchBuffer, ref int pnBufferSize )

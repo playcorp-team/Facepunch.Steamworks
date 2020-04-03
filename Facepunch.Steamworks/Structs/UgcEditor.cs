@@ -204,7 +204,7 @@ namespace Steamworks.Ugc
 
 				progress?.Report( 1 );
 
-				var updated = updating.GetResult();
+				var updated = updating.Result;
 
 				if ( !updated.HasValue ) return result;
 

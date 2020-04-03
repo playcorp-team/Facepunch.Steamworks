@@ -9,6 +9,8 @@ namespace Steamworks.Data
 {
 	public struct ServerInfo : IEquatable<ServerInfo>
 	{
+		static ISteamMatchmakingServers Internal => Steamworks.ServerList.Base.Internal;
+
 		public string Name { get; set; }
 		public int Ping { get; set; }
 		public string GameDir { get; set; }

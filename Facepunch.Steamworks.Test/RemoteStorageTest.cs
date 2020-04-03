@@ -10,8 +10,7 @@ namespace Steamworks
 {
     [TestClass]
     [DeploymentItem( "steam_api64.dll" )]
-	[DeploymentItem( "steam_api.dll" )]
-	public class RemoteStorageTest
+    public class RemoteStorageTest
 	{
 		[TestMethod]
         public void Quotas()

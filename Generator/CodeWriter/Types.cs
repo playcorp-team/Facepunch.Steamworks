@@ -37,10 +37,7 @@ namespace Generator
         {
             foreach ( var o in def.typedefs.Where( x => !x.Name.Contains( "::" ) ) )
             {
-                if ( !Cleanup.ShouldCreate( o.Name ) )
-                    continue;
-
-                var typeName = Cleanup.ConvertType( o.Name );
+				var typeName = Cleanup.ConvertType( o.Name );
 
 				if ( !Cleanup.ShouldCreate( typeName ) )
 					continue;
@@ -53,16 +50,7 @@ namespace Generator
 
 				StartBlock( $"{Cleanup.Expose( typeName )} struct {typeName} : IEquatable<{typeName}>, IComparable<{typeName}>" );
                 {
-                    WriteLine( $"// Name: {o.Name}, Type: {o.Type}" );
-
-                    if ( o.Type == "char [1024]" )
-                    {
-                        WriteLine( $"public fixed char[1024] Value;" );
-                    }
-                    else
-                    {
-                        WriteLine( $"public {ToManagedType( o.Type )} Value;" );
-                    }
+					WriteLine( $"public {ToManagedType( o.Type )} Value;" );
 					WriteLine();
 					WriteLine( $"public static implicit operator {typeName}( {ToManagedType( o.Type )} value ) => new {typeName}(){{ Value = value }};" );
 					WriteLine( $"public static implicit operator {ToManagedType( o.Type )}( {typeName} value ) => value.Value;" );

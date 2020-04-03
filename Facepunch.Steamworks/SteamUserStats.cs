@@ -7,22 +7,36 @@ using Steamworks.Data;
 
 namespace Steamworks
 {
-	public class SteamUserStats : SteamClientClass<SteamUserStats>
+	public static class SteamUserStats
 	{
-		internal static ISteamUserStats Internal => Interface as ISteamUserStats;
-
-		internal override void InitializeInterface( bool server )
+		static ISteamUserStats _internal;
+		internal static ISteamUserStats Internal
 		{
-			SetInterface( server, new ISteamUserStats( server ) );
-			InstallEvents();
-			RequestCurrentStats();
+			get
+			{
+				SteamClient.ValidCheck();
+
+				if ( _internal == null )
+				{
+					_internal = new ISteamUserStats();
+					_internal.Init();
+
+					RequestCurrentStats();
+				}
+
+				return _internal;
+			}
+		}
+		internal static void Shutdown()
+		{
+			_internal = null;
 		}
 
 		public static bool StatsRecieved { get; internal set; }
 
 		internal static void InstallEvents()
 		{
-			Dispatch.Install<UserStatsReceived_t>( x =>
+			UserStatsReceived_t.Install( x =>
 			{
 				if ( x.SteamIDUser == SteamClient.SteamId )
 					StatsRecieved = true;
@@ -30,10 +44,10 @@ namespace Steamworks
 				OnUserStatsReceived?.Invoke( x.SteamIDUser, x.Result );
 			} );
 
-			Dispatch.Install<UserStatsStored_t>( x => OnUserStatsStored?.Invoke( x.Result ) );
-			Dispatch.Install<UserAchievementStored_t>( x => OnAchievementProgress?.Invoke( new Achievement( x.AchievementNameUTF8() ), (int) x.CurProgress, (int)x.MaxProgress ) );
-			Dispatch.Install<UserStatsUnloaded_t>( x => OnUserStatsUnloaded?.Invoke( x.SteamIDUser ) );
-			Dispatch.Install<UserAchievementIconFetched_t>( x => OnAchievementIconFetched?.Invoke( x.AchievementNameUTF8(), x.IconHandle ) );
+			UserStatsStored_t.Install( x => OnUserStatsStored?.Invoke( x.Result ) );
+			UserAchievementStored_t.Install( x => OnAchievementProgress?.Invoke( new Achievement( x.AchievementNameUTF8() ), (int) x.CurProgress, (int)x.MaxProgress ) );
+			UserStatsUnloaded_t.Install( x => OnUserStatsUnloaded?.Invoke( x.SteamIDUser ) );
+			UserAchievementIconFetched_t.Install( x => OnAchievementIconFetched?.Invoke( x.AchievementNameUTF8(), x.IconHandle ) );
 		}
 
 
@@ -137,22 +151,6 @@ namespace Steamworks
 		}
 
 		/// <summary>
-		/// Asynchronously fetches global stats data, which is available for stats marked as 
-		/// "aggregated" in the App Admin panel of the Steamworks website.
-		/// You must have called RequestCurrentStats and it needs to return successfully via 
-		/// its callback prior to calling this.
-		/// </summary>
-		/// <param name="days">How many days of day-by-day history to retrieve in addition to the overall totals. The limit is 60.</param>
-		/// <returns>OK indicates success, InvalidState means you need to call RequestCurrentStats first, Fail means the remote call failed</returns>
-		public static async Task<Result> RequestGlobalStatsAsync( int days )
-		{
-			var result = await SteamUserStats.Internal.RequestGlobalStats( days );
-			if ( !result.HasValue ) return Result.Fail;
-			return result.Value.Result;
-		}
-
-
-		/// <summary>
 		/// Gets a leaderboard by name, it will create it if it's not yet created.
 		/// Leaderboards created with this function will not automatically show up in the Steam Community.
 		/// You must manually set the Community Name field in the App Admin panel of the Steamworks website. 
@@ -211,7 +209,7 @@ namespace Steamworks
 		/// </summary>
 		public static bool SetStat( string name, int value )
 		{
-			return Internal.SetStat( name, value );
+			return Internal.SetStat1( name, value );
 		}
 
 		/// <summary>
@@ -220,7 +218,7 @@ namespace Steamworks
 		/// </summary>
 		public static bool SetStat( string name, float value )
 		{
-			return Internal.SetStat( name, value );
+			return Internal.SetStat2( name, value );
 		}
 
 		/// <summary>
@@ -229,7 +227,7 @@ namespace Steamworks
 		public static int GetStatInt( string name )
 		{
 			int data = 0;
-			Internal.GetStat( name, ref data );
+			Internal.GetStat1( name, ref data );
 			return data;
 		}
 
@@ -239,7 +237,7 @@ namespace Steamworks
 		public static float GetStatFloat( string name )
 		{
 			float data = 0;
-			Internal.GetStat( name, ref data );
+			Internal.GetStat2( name, ref data );
 			return data;
 		}
 

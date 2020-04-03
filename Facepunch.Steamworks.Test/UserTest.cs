@@ -11,8 +11,7 @@ namespace Steamworks
 {
     [TestClass]
     [DeploymentItem( "steam_api64.dll" )]
-	[DeploymentItem( "steam_api.dll" )]
-	public class UserTest
+    public class UserTest
     {
 		[TestMethod]
 		public void GetVoice()
@@ -136,43 +135,19 @@ namespace Steamworks
 		[TestMethod]
 		public async Task RequestEncryptedAppTicketAsyncWithData()
 		{
-			for ( int i=0; i<10; i++ )
-			{
-				var data = await SteamUser.RequestEncryptedAppTicketAsync( new byte[] { 0, 1, 2, 3, 4, 5, 6, 7 } );
+			var data = await SteamUser.RequestEncryptedAppTicketAsync( new byte[] { 0, 1, 2, 3, 4, 5, 6, 7 } );
+			Assert.IsNotNull( data );
 
-				if ( data == null )
-				{
-					Console.WriteLine( $"Attempt {i}: Returned null.. waiting 1 seconds" );
-					await Task.Delay( 10000 );
-					continue;
-				}
-
-				Console.WriteLine( $"data: {BitConverter.ToString( data )}" );
-				return;
-			}
-
-			Assert.Fail();
+			Console.WriteLine( $"data: {string.Join( "", data.Select( x => x.ToString( "x" ) ))}" );
 		}
 
 		[TestMethod]
 		public async Task RequestEncryptedAppTicketAsync()
 		{
-			for ( int i = 0; i < 6; i++ )
-			{
-				var data = await SteamUser.RequestEncryptedAppTicketAsync();
+			var data = await SteamUser.RequestEncryptedAppTicketAsync();
+			Assert.IsNotNull( data );
 
-				if ( data == null )
-				{
-					Console.WriteLine( $"Attempt {i}: Returned null.. waiting 1 seconds" );
-					await Task.Delay( 10000 );
-					continue;
-				}
-
-				Console.WriteLine( $"data: {BitConverter.ToString( data )}" );
-				return;
-			}
-
-			Assert.Fail();
+			Console.WriteLine( $"data: {string.Join( "", data.Select( x => x.ToString( "x" ) ) )}" );
 		}
 
 	}

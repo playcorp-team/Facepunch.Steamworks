@@ -9,50 +9,15 @@ namespace Generator
 {
     public class SteamApiDefinition
     {
-        public class Interface
+        public class TypeDef
         {
-            [JsonProperty( PropertyName = "classname" )]
+            [JsonProperty( PropertyName = "typedef" )]
             public string Name { get; set; }
-
-            [JsonProperty( PropertyName = "version_string" )]
-            public string VersionString { get; set; }
-
-            public class Method
-            {
-                public string Desc { get; set; }
-                public string ReturnType { get; set; }
-                public string CallResult { get; set; }
-
-                public class Param
-                {
-                    public string ParamType { get; set; }
-                    public string ParamName { get; set; }
-                }
-
-                public Param[] Params { get; set; }
-                [JsonProperty( PropertyName = "methodname" )]
-                public string Name { get; set; }
-                [JsonProperty( PropertyName = "methodname_flat" )]
-                public string FlatName { get; set; }
-
-            }
-
-            public Method[] Methods { get; set; }
-
-
-            public class Accessor
-            {
-                public string Kind { get; set; }
-                public string Name { get; set; }
-                public string Name_Flat { get; set; }
-            }
-
-            public Accessor[] Accessors { get; set; }
-
+            [JsonProperty( PropertyName = "type" )]
+            public string Type { get; set; }
         }
 
-        public Interface[] Interfaces { get; set; }
-
+        public List<TypeDef> typedefs { get; set; }
 
         public class EnumDef
         {
@@ -72,17 +37,6 @@ namespace Generator
 
         public EnumDef[] enums { get; set; }
 
-
-        public class TypeDef
-        {
-            [JsonProperty( PropertyName = "typedef" )]
-            public string Name { get; set; }
-            [JsonProperty( PropertyName = "type" )]
-            public string Type { get; set; }
-        }
-
-        public List<TypeDef> typedefs { get; set; }
-
         public class StructDef
         {
             public class StructFields
@@ -97,54 +51,58 @@ namespace Generator
             public string Name { get; set; }
             [JsonProperty( PropertyName = "fields" )]
             public StructFields[] Fields { get; set; }
-            public Interface.Method[] Methods { get; set; }
 
-            public bool IsPack4OnWindows
-            {
-                get
-                {
-                    // 4/8 packing is irrevant to these classes
-                    if ( Name.Contains( "MatchMakingKeyValuePair_t" ) ) return true;
+            public string CallbackId { get; set; }
+            public bool IsCallResult { get; set; }
 
-                    if ( Fields.Skip( 1 ).Any( x => x.Type.Contains( "CSteamID" ) ) )
-                        return true;
 
-                    if ( Fields.Skip( 1 ).Any( x => x.Type.Contains( "CGameID" ) ) )
-                        return true;
+			public bool IsPack4OnWindows
+			{
+				get
+				{
+					// 4/8 packing is irrevant to these classes
+					if ( Name.Contains( "MatchMakingKeyValuePair_t" ) ) return true;
 
-                    return false;
-                }
-            }
+					if ( Fields.Any( x => x.Type.Contains( "CSteamID" ) ) )
+						return true;
 
-            public EnumDef[] Enums { get; set; }
+					return false;
+				}
+			}
 
         }
 
         public List<StructDef> structs { get; set; }
 
-        public class CallbackStructDef : StructDef
+        public class MethodDef
         {
-            [JsonProperty( PropertyName = "callback_id" )]
-            public int CallbackId { get; set; }
-        }
+            public class ParamType
+            {
+                [JsonProperty( PropertyName = "paramname" )]
+                public string Name { get; set; }
+                [JsonProperty( PropertyName = "paramtype" )]
+                public string Type { get; set; }
+            }
 
-        public List<CallbackStructDef> callback_structs { get; set; }
-
-        public class Const
-        {
-            [JsonProperty( PropertyName = "consttype" )]
-            public string Type { get; set; }
-
-            [JsonProperty( PropertyName = "constname" )]
+            [JsonProperty( PropertyName = "classname" )]
+            public string ClassName { get; set; }
+            [JsonProperty( PropertyName = "methodname" )]
             public string Name { get; set; }
+            [JsonProperty( PropertyName = "returntype" )]
+            public string ReturnType { get; set; }
+            [JsonProperty( PropertyName = "params" )]
+            public ParamType[] Params { get; set; }
 
+            [JsonProperty( PropertyName = "callresult" )]
+            public string CallResult { get; set; }
 
-            [JsonProperty( PropertyName = "constval" )]
-            public string Val { get; set; }
+            public bool NeedsSelfPointer = true;
         }
 
-        public List<Const> Consts { get; set; }
+        public List<MethodDef> methods { get; set; }
+
+
+        public Dictionary<string, int> CallbackIds { get; internal set; }
+        public Dictionary<string, string> Defines { get; internal set; }
     }
-
-
 }

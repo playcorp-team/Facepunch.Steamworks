@@ -9,20 +9,81 @@ namespace Steamworks
 {
 	internal class ISteamUser : SteamInterface
 	{
+		public override string InterfaceName => "SteamUser020";
 		
-		internal ISteamUser( bool IsGameServer )
+		public override void InitInternals()
 		{
-			SetupInterface( IsGameServer );
+			_GetHSteamUser = Marshal.GetDelegateForFunctionPointer<FGetHSteamUser>( Marshal.ReadIntPtr( VTable, Platform.MemoryOffset( 0 ) ) );
+			_BLoggedOn = Marshal.GetDelegateForFunctionPointer<FBLoggedOn>( Marshal.ReadIntPtr( VTable, Platform.MemoryOffset( 8 ) ) );
+			_GetSteamID = Marshal.GetDelegateForFunctionPointer<FGetSteamID>( Marshal.ReadIntPtr( VTable, Platform.MemoryOffset( 16 ) ) );
+			_InitiateGameConnection = Marshal.GetDelegateForFunctionPointer<FInitiateGameConnection>( Marshal.ReadIntPtr( VTable, Platform.MemoryOffset( 24 ) ) );
+			_TerminateGameConnection = Marshal.GetDelegateForFunctionPointer<FTerminateGameConnection>( Marshal.ReadIntPtr( VTable, Platform.MemoryOffset( 32 ) ) );
+			_TrackAppUsageEvent = Marshal.GetDelegateForFunctionPointer<FTrackAppUsageEvent>( Marshal.ReadIntPtr( VTable, Platform.MemoryOffset( 40 ) ) );
+			_GetUserDataFolder = Marshal.GetDelegateForFunctionPointer<FGetUserDataFolder>( Marshal.ReadIntPtr( VTable, Platform.MemoryOffset( 48 ) ) );
+			_StartVoiceRecording = Marshal.GetDelegateForFunctionPointer<FStartVoiceRecording>( Marshal.ReadIntPtr( VTable, Platform.MemoryOffset( 56 ) ) );
+			_StopVoiceRecording = Marshal.GetDelegateForFunctionPointer<FStopVoiceRecording>( Marshal.ReadIntPtr( VTable, Platform.MemoryOffset( 64 ) ) );
+			_GetAvailableVoice = Marshal.GetDelegateForFunctionPointer<FGetAvailableVoice>( Marshal.ReadIntPtr( VTable, Platform.MemoryOffset( 72 ) ) );
+			_GetVoice = Marshal.GetDelegateForFunctionPointer<FGetVoice>( Marshal.ReadIntPtr( VTable, Platform.MemoryOffset( 80 ) ) );
+			_DecompressVoice = Marshal.GetDelegateForFunctionPointer<FDecompressVoice>( Marshal.ReadIntPtr( VTable, Platform.MemoryOffset( 88 ) ) );
+			_GetVoiceOptimalSampleRate = Marshal.GetDelegateForFunctionPointer<FGetVoiceOptimalSampleRate>( Marshal.ReadIntPtr( VTable, Platform.MemoryOffset( 96 ) ) );
+			_GetAuthSessionTicket = Marshal.GetDelegateForFunctionPointer<FGetAuthSessionTicket>( Marshal.ReadIntPtr( VTable, Platform.MemoryOffset( 104 ) ) );
+			_BeginAuthSession = Marshal.GetDelegateForFunctionPointer<FBeginAuthSession>( Marshal.ReadIntPtr( VTable, Platform.MemoryOffset( 112 ) ) );
+			_EndAuthSession = Marshal.GetDelegateForFunctionPointer<FEndAuthSession>( Marshal.ReadIntPtr( VTable, Platform.MemoryOffset( 120 ) ) );
+			_CancelAuthTicket = Marshal.GetDelegateForFunctionPointer<FCancelAuthTicket>( Marshal.ReadIntPtr( VTable, Platform.MemoryOffset( 128 ) ) );
+			_UserHasLicenseForApp = Marshal.GetDelegateForFunctionPointer<FUserHasLicenseForApp>( Marshal.ReadIntPtr( VTable, Platform.MemoryOffset( 136 ) ) );
+			_BIsBehindNAT = Marshal.GetDelegateForFunctionPointer<FBIsBehindNAT>( Marshal.ReadIntPtr( VTable, Platform.MemoryOffset( 144 ) ) );
+			_AdvertiseGame = Marshal.GetDelegateForFunctionPointer<FAdvertiseGame>( Marshal.ReadIntPtr( VTable, Platform.MemoryOffset( 152 ) ) );
+			_RequestEncryptedAppTicket = Marshal.GetDelegateForFunctionPointer<FRequestEncryptedAppTicket>( Marshal.ReadIntPtr( VTable, Platform.MemoryOffset( 160 ) ) );
+			_GetEncryptedAppTicket = Marshal.GetDelegateForFunctionPointer<FGetEncryptedAppTicket>( Marshal.ReadIntPtr( VTable, Platform.MemoryOffset( 168 ) ) );
+			_GetGameBadgeLevel = Marshal.GetDelegateForFunctionPointer<FGetGameBadgeLevel>( Marshal.ReadIntPtr( VTable, Platform.MemoryOffset( 176 ) ) );
+			_GetPlayerSteamLevel = Marshal.GetDelegateForFunctionPointer<FGetPlayerSteamLevel>( Marshal.ReadIntPtr( VTable, Platform.MemoryOffset( 184 ) ) );
+			_RequestStoreAuthURL = Marshal.GetDelegateForFunctionPointer<FRequestStoreAuthURL>( Marshal.ReadIntPtr( VTable, Platform.MemoryOffset( 192 ) ) );
+			_BIsPhoneVerified = Marshal.GetDelegateForFunctionPointer<FBIsPhoneVerified>( Marshal.ReadIntPtr( VTable, Platform.MemoryOffset( 200 ) ) );
+			_BIsTwoFactorEnabled = Marshal.GetDelegateForFunctionPointer<FBIsTwoFactorEnabled>( Marshal.ReadIntPtr( VTable, Platform.MemoryOffset( 208 ) ) );
+			_BIsPhoneIdentifying = Marshal.GetDelegateForFunctionPointer<FBIsPhoneIdentifying>( Marshal.ReadIntPtr( VTable, Platform.MemoryOffset( 216 ) ) );
+			_BIsPhoneRequiringVerification = Marshal.GetDelegateForFunctionPointer<FBIsPhoneRequiringVerification>( Marshal.ReadIntPtr( VTable, Platform.MemoryOffset( 224 ) ) );
+			_GetMarketEligibility = Marshal.GetDelegateForFunctionPointer<FGetMarketEligibility>( Marshal.ReadIntPtr( VTable, Platform.MemoryOffset( 232 ) ) );
+		}
+		internal override void Shutdown()
+		{
+			base.Shutdown();
+			
+			_GetHSteamUser = null;
+			_BLoggedOn = null;
+			_GetSteamID = null;
+			_InitiateGameConnection = null;
+			_TerminateGameConnection = null;
+			_TrackAppUsageEvent = null;
+			_GetUserDataFolder = null;
+			_StartVoiceRecording = null;
+			_StopVoiceRecording = null;
+			_GetAvailableVoice = null;
+			_GetVoice = null;
+			_DecompressVoice = null;
+			_GetVoiceOptimalSampleRate = null;
+			_GetAuthSessionTicket = null;
+			_BeginAuthSession = null;
+			_EndAuthSession = null;
+			_CancelAuthTicket = null;
+			_UserHasLicenseForApp = null;
+			_BIsBehindNAT = null;
+			_AdvertiseGame = null;
+			_RequestEncryptedAppTicket = null;
+			_GetEncryptedAppTicket = null;
+			_GetGameBadgeLevel = null;
+			_GetPlayerSteamLevel = null;
+			_RequestStoreAuthURL = null;
+			_BIsPhoneVerified = null;
+			_BIsTwoFactorEnabled = null;
+			_BIsPhoneIdentifying = null;
+			_BIsPhoneRequiringVerification = null;
+			_GetMarketEligibility = null;
 		}
 		
-		[DllImport( Platform.LibraryName, EntryPoint = "SteamAPI_SteamUser_v020", CallingConvention = Platform.CC)]
-		internal static extern IntPtr SteamAPI_SteamUser_v020();
-		public override IntPtr GetUserInterfacePointer() => SteamAPI_SteamUser_v020();
-		
-		
 		#region FunctionMeta
-		[DllImport( Platform.LibraryName, EntryPoint = "SteamAPI_ISteamUser_GetHSteamUser", CallingConvention = Platform.CC)]
-		private static extern HSteamUser _GetHSteamUser( IntPtr self );
+		[UnmanagedFunctionPointer( Platform.MemberConvention )]
+		private delegate HSteamUser FGetHSteamUser( IntPtr self );
+		private FGetHSteamUser _GetHSteamUser;
 		
 		#endregion
 		internal HSteamUser GetHSteamUser()
@@ -32,9 +93,10 @@ namespace Steamworks
 		}
 		
 		#region FunctionMeta
-		[DllImport( Platform.LibraryName, EntryPoint = "SteamAPI_ISteamUser_BLoggedOn", CallingConvention = Platform.CC)]
+		[UnmanagedFunctionPointer( Platform.MemberConvention )]
 		[return: MarshalAs( UnmanagedType.I1 )]
-		private static extern bool _BLoggedOn( IntPtr self );
+		private delegate bool FBLoggedOn( IntPtr self );
+		private FBLoggedOn _BLoggedOn;
 		
 		#endregion
 		internal bool BLoggedOn()
@@ -44,19 +106,31 @@ namespace Steamworks
 		}
 		
 		#region FunctionMeta
-		[DllImport( Platform.LibraryName, EntryPoint = "SteamAPI_ISteamUser_GetSteamID", CallingConvention = Platform.CC)]
-		private static extern SteamId _GetSteamID( IntPtr self );
+		[UnmanagedFunctionPointer( Platform.MemberConvention )]
+		#if PLATFORM_WIN
+		private delegate void FGetSteamID( IntPtr self, ref SteamId retVal );
+		#else
+		private delegate SteamId FGetSteamID( IntPtr self );
+		#endif
+		private FGetSteamID _GetSteamID;
 		
 		#endregion
 		internal SteamId GetSteamID()
 		{
+			#if PLATFORM_WIN
+			var retVal = default( SteamId );
+			_GetSteamID( Self, ref retVal );
+			return retVal;
+			#else
 			var returnValue = _GetSteamID( Self );
 			return returnValue;
+			#endif
 		}
 		
 		#region FunctionMeta
-		[DllImport( Platform.LibraryName, EntryPoint = "SteamAPI_ISteamUser_InitiateGameConnection", CallingConvention = Platform.CC)]
-		private static extern int _InitiateGameConnection( IntPtr self, IntPtr pAuthBlob, int cbMaxAuthBlob, SteamId steamIDGameServer, uint unIPServer, ushort usPortServer, [MarshalAs( UnmanagedType.U1 )] bool bSecure );
+		[UnmanagedFunctionPointer( Platform.MemberConvention )]
+		private delegate int FInitiateGameConnection( IntPtr self, IntPtr pAuthBlob, int cbMaxAuthBlob, SteamId steamIDGameServer, uint unIPServer, ushort usPortServer, [MarshalAs( UnmanagedType.U1 )] bool bSecure );
+		private FInitiateGameConnection _InitiateGameConnection;
 		
 		#endregion
 		internal int InitiateGameConnection( IntPtr pAuthBlob, int cbMaxAuthBlob, SteamId steamIDGameServer, uint unIPServer, ushort usPortServer, [MarshalAs( UnmanagedType.U1 )] bool bSecure )
@@ -66,8 +140,9 @@ namespace Steamworks
 		}
 		
 		#region FunctionMeta
-		[DllImport( Platform.LibraryName, EntryPoint = "SteamAPI_ISteamUser_TerminateGameConnection", CallingConvention = Platform.CC)]
-		private static extern void _TerminateGameConnection( IntPtr self, uint unIPServer, ushort usPortServer );
+		[UnmanagedFunctionPointer( Platform.MemberConvention )]
+		private delegate void FTerminateGameConnection( IntPtr self, uint unIPServer, ushort usPortServer );
+		private FTerminateGameConnection _TerminateGameConnection;
 		
 		#endregion
 		internal void TerminateGameConnection( uint unIPServer, ushort usPortServer )
@@ -76,8 +151,9 @@ namespace Steamworks
 		}
 		
 		#region FunctionMeta
-		[DllImport( Platform.LibraryName, EntryPoint = "SteamAPI_ISteamUser_TrackAppUsageEvent", CallingConvention = Platform.CC)]
-		private static extern void _TrackAppUsageEvent( IntPtr self, GameId gameID, int eAppUsageEvent, [MarshalAs( UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof( Utf8StringToNative ) )] string pchExtraInfo );
+		[UnmanagedFunctionPointer( Platform.MemberConvention )]
+		private delegate void FTrackAppUsageEvent( IntPtr self, GameId gameID, int eAppUsageEvent, [MarshalAs( UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof( Utf8StringToNative ) )] string pchExtraInfo );
+		private FTrackAppUsageEvent _TrackAppUsageEvent;
 		
 		#endregion
 		internal void TrackAppUsageEvent( GameId gameID, int eAppUsageEvent, [MarshalAs( UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof( Utf8StringToNative ) )] string pchExtraInfo )
@@ -86,9 +162,10 @@ namespace Steamworks
 		}
 		
 		#region FunctionMeta
-		[DllImport( Platform.LibraryName, EntryPoint = "SteamAPI_ISteamUser_GetUserDataFolder", CallingConvention = Platform.CC)]
+		[UnmanagedFunctionPointer( Platform.MemberConvention )]
 		[return: MarshalAs( UnmanagedType.I1 )]
-		private static extern bool _GetUserDataFolder( IntPtr self, IntPtr pchBuffer, int cubBuffer );
+		private delegate bool FGetUserDataFolder( IntPtr self, IntPtr pchBuffer, int cubBuffer );
+		private FGetUserDataFolder _GetUserDataFolder;
 		
 		#endregion
 		internal bool GetUserDataFolder( out string pchBuffer )
@@ -100,8 +177,9 @@ namespace Steamworks
 		}
 		
 		#region FunctionMeta
-		[DllImport( Platform.LibraryName, EntryPoint = "SteamAPI_ISteamUser_StartVoiceRecording", CallingConvention = Platform.CC)]
-		private static extern void _StartVoiceRecording( IntPtr self );
+		[UnmanagedFunctionPointer( Platform.MemberConvention )]
+		private delegate void FStartVoiceRecording( IntPtr self );
+		private FStartVoiceRecording _StartVoiceRecording;
 		
 		#endregion
 		internal void StartVoiceRecording()
@@ -110,8 +188,9 @@ namespace Steamworks
 		}
 		
 		#region FunctionMeta
-		[DllImport( Platform.LibraryName, EntryPoint = "SteamAPI_ISteamUser_StopVoiceRecording", CallingConvention = Platform.CC)]
-		private static extern void _StopVoiceRecording( IntPtr self );
+		[UnmanagedFunctionPointer( Platform.MemberConvention )]
+		private delegate void FStopVoiceRecording( IntPtr self );
+		private FStopVoiceRecording _StopVoiceRecording;
 		
 		#endregion
 		internal void StopVoiceRecording()
@@ -120,8 +199,9 @@ namespace Steamworks
 		}
 		
 		#region FunctionMeta
-		[DllImport( Platform.LibraryName, EntryPoint = "SteamAPI_ISteamUser_GetAvailableVoice", CallingConvention = Platform.CC)]
-		private static extern VoiceResult _GetAvailableVoice( IntPtr self, ref uint pcbCompressed, ref uint pcbUncompressed_Deprecated, uint nUncompressedVoiceDesiredSampleRate_Deprecated );
+		[UnmanagedFunctionPointer( Platform.MemberConvention )]
+		private delegate VoiceResult FGetAvailableVoice( IntPtr self, ref uint pcbCompressed, ref uint pcbUncompressed_Deprecated, uint nUncompressedVoiceDesiredSampleRate_Deprecated );
+		private FGetAvailableVoice _GetAvailableVoice;
 		
 		#endregion
 		internal VoiceResult GetAvailableVoice( ref uint pcbCompressed, ref uint pcbUncompressed_Deprecated, uint nUncompressedVoiceDesiredSampleRate_Deprecated )
@@ -131,8 +211,9 @@ namespace Steamworks
 		}
 		
 		#region FunctionMeta
-		[DllImport( Platform.LibraryName, EntryPoint = "SteamAPI_ISteamUser_GetVoice", CallingConvention = Platform.CC)]
-		private static extern VoiceResult _GetVoice( IntPtr self, [MarshalAs( UnmanagedType.U1 )] bool bWantCompressed, IntPtr pDestBuffer, uint cbDestBufferSize, ref uint nBytesWritten, [MarshalAs( UnmanagedType.U1 )] bool bWantUncompressed_Deprecated, IntPtr pUncompressedDestBuffer_Deprecated, uint cbUncompressedDestBufferSize_Deprecated, ref uint nUncompressBytesWritten_Deprecated, uint nUncompressedVoiceDesiredSampleRate_Deprecated );
+		[UnmanagedFunctionPointer( Platform.MemberConvention )]
+		private delegate VoiceResult FGetVoice( IntPtr self, [MarshalAs( UnmanagedType.U1 )] bool bWantCompressed, IntPtr pDestBuffer, uint cbDestBufferSize, ref uint nBytesWritten, [MarshalAs( UnmanagedType.U1 )] bool bWantUncompressed_Deprecated, IntPtr pUncompressedDestBuffer_Deprecated, uint cbUncompressedDestBufferSize_Deprecated, ref uint nUncompressBytesWritten_Deprecated, uint nUncompressedVoiceDesiredSampleRate_Deprecated );
+		private FGetVoice _GetVoice;
 		
 		#endregion
 		internal VoiceResult GetVoice( [MarshalAs( UnmanagedType.U1 )] bool bWantCompressed, IntPtr pDestBuffer, uint cbDestBufferSize, ref uint nBytesWritten, [MarshalAs( UnmanagedType.U1 )] bool bWantUncompressed_Deprecated, IntPtr pUncompressedDestBuffer_Deprecated, uint cbUncompressedDestBufferSize_Deprecated, ref uint nUncompressBytesWritten_Deprecated, uint nUncompressedVoiceDesiredSampleRate_Deprecated )
@@ -142,8 +223,9 @@ namespace Steamworks
 		}
 		
 		#region FunctionMeta
-		[DllImport( Platform.LibraryName, EntryPoint = "SteamAPI_ISteamUser_DecompressVoice", CallingConvention = Platform.CC)]
-		private static extern VoiceResult _DecompressVoice( IntPtr self, IntPtr pCompressed, uint cbCompressed, IntPtr pDestBuffer, uint cbDestBufferSize, ref uint nBytesWritten, uint nDesiredSampleRate );
+		[UnmanagedFunctionPointer( Platform.MemberConvention )]
+		private delegate VoiceResult FDecompressVoice( IntPtr self, IntPtr pCompressed, uint cbCompressed, IntPtr pDestBuffer, uint cbDestBufferSize, ref uint nBytesWritten, uint nDesiredSampleRate );
+		private FDecompressVoice _DecompressVoice;
 		
 		#endregion
 		internal VoiceResult DecompressVoice( IntPtr pCompressed, uint cbCompressed, IntPtr pDestBuffer, uint cbDestBufferSize, ref uint nBytesWritten, uint nDesiredSampleRate )
@@ -153,8 +235,9 @@ namespace Steamworks
 		}
 		
 		#region FunctionMeta
-		[DllImport( Platform.LibraryName, EntryPoint = "SteamAPI_ISteamUser_GetVoiceOptimalSampleRate", CallingConvention = Platform.CC)]
-		private static extern uint _GetVoiceOptimalSampleRate( IntPtr self );
+		[UnmanagedFunctionPointer( Platform.MemberConvention )]
+		private delegate uint FGetVoiceOptimalSampleRate( IntPtr self );
+		private FGetVoiceOptimalSampleRate _GetVoiceOptimalSampleRate;
 		
 		#endregion
 		internal uint GetVoiceOptimalSampleRate()
@@ -164,8 +247,9 @@ namespace Steamworks
 		}
 		
 		#region FunctionMeta
-		[DllImport( Platform.LibraryName, EntryPoint = "SteamAPI_ISteamUser_GetAuthSessionTicket", CallingConvention = Platform.CC)]
-		private static extern HAuthTicket _GetAuthSessionTicket( IntPtr self, IntPtr pTicket, int cbMaxTicket, ref uint pcbTicket );
+		[UnmanagedFunctionPointer( Platform.MemberConvention )]
+		private delegate HAuthTicket FGetAuthSessionTicket( IntPtr self, IntPtr pTicket, int cbMaxTicket, ref uint pcbTicket );
+		private FGetAuthSessionTicket _GetAuthSessionTicket;
 		
 		#endregion
 		internal HAuthTicket GetAuthSessionTicket( IntPtr pTicket, int cbMaxTicket, ref uint pcbTicket )
@@ -175,8 +259,9 @@ namespace Steamworks
 		}
 		
 		#region FunctionMeta
-		[DllImport( Platform.LibraryName, EntryPoint = "SteamAPI_ISteamUser_BeginAuthSession", CallingConvention = Platform.CC)]
-		private static extern BeginAuthResult _BeginAuthSession( IntPtr self, IntPtr pAuthTicket, int cbAuthTicket, SteamId steamID );
+		[UnmanagedFunctionPointer( Platform.MemberConvention )]
+		private delegate BeginAuthResult FBeginAuthSession( IntPtr self, IntPtr pAuthTicket, int cbAuthTicket, SteamId steamID );
+		private FBeginAuthSession _BeginAuthSession;
 		
 		#endregion
 		internal BeginAuthResult BeginAuthSession( IntPtr pAuthTicket, int cbAuthTicket, SteamId steamID )
@@ -186,8 +271,9 @@ namespace Steamworks
 		}
 		
 		#region FunctionMeta
-		[DllImport( Platform.LibraryName, EntryPoint = "SteamAPI_ISteamUser_EndAuthSession", CallingConvention = Platform.CC)]
-		private static extern void _EndAuthSession( IntPtr self, SteamId steamID );
+		[UnmanagedFunctionPointer( Platform.MemberConvention )]
+		private delegate void FEndAuthSession( IntPtr self, SteamId steamID );
+		private FEndAuthSession _EndAuthSession;
 		
 		#endregion
 		internal void EndAuthSession( SteamId steamID )
@@ -196,8 +282,9 @@ namespace Steamworks
 		}
 		
 		#region FunctionMeta
-		[DllImport( Platform.LibraryName, EntryPoint = "SteamAPI_ISteamUser_CancelAuthTicket", CallingConvention = Platform.CC)]
-		private static extern void _CancelAuthTicket( IntPtr self, HAuthTicket hAuthTicket );
+		[UnmanagedFunctionPointer( Platform.MemberConvention )]
+		private delegate void FCancelAuthTicket( IntPtr self, HAuthTicket hAuthTicket );
+		private FCancelAuthTicket _CancelAuthTicket;
 		
 		#endregion
 		internal void CancelAuthTicket( HAuthTicket hAuthTicket )
@@ -206,8 +293,9 @@ namespace Steamworks
 		}
 		
 		#region FunctionMeta
-		[DllImport( Platform.LibraryName, EntryPoint = "SteamAPI_ISteamUser_UserHasLicenseForApp", CallingConvention = Platform.CC)]
-		private static extern UserHasLicenseForAppResult _UserHasLicenseForApp( IntPtr self, SteamId steamID, AppId appID );
+		[UnmanagedFunctionPointer( Platform.MemberConvention )]
+		private delegate UserHasLicenseForAppResult FUserHasLicenseForApp( IntPtr self, SteamId steamID, AppId appID );
+		private FUserHasLicenseForApp _UserHasLicenseForApp;
 		
 		#endregion
 		internal UserHasLicenseForAppResult UserHasLicenseForApp( SteamId steamID, AppId appID )
@@ -217,9 +305,10 @@ namespace Steamworks
 		}
 		
 		#region FunctionMeta
-		[DllImport( Platform.LibraryName, EntryPoint = "SteamAPI_ISteamUser_BIsBehindNAT", CallingConvention = Platform.CC)]
+		[UnmanagedFunctionPointer( Platform.MemberConvention )]
 		[return: MarshalAs( UnmanagedType.I1 )]
-		private static extern bool _BIsBehindNAT( IntPtr self );
+		private delegate bool FBIsBehindNAT( IntPtr self );
+		private FBIsBehindNAT _BIsBehindNAT;
 		
 		#endregion
 		internal bool BIsBehindNAT()
@@ -229,8 +318,9 @@ namespace Steamworks
 		}
 		
 		#region FunctionMeta
-		[DllImport( Platform.LibraryName, EntryPoint = "SteamAPI_ISteamUser_AdvertiseGame", CallingConvention = Platform.CC)]
-		private static extern void _AdvertiseGame( IntPtr self, SteamId steamIDGameServer, uint unIPServer, ushort usPortServer );
+		[UnmanagedFunctionPointer( Platform.MemberConvention )]
+		private delegate void FAdvertiseGame( IntPtr self, SteamId steamIDGameServer, uint unIPServer, ushort usPortServer );
+		private FAdvertiseGame _AdvertiseGame;
 		
 		#endregion
 		internal void AdvertiseGame( SteamId steamIDGameServer, uint unIPServer, ushort usPortServer )
@@ -239,20 +329,22 @@ namespace Steamworks
 		}
 		
 		#region FunctionMeta
-		[DllImport( Platform.LibraryName, EntryPoint = "SteamAPI_ISteamUser_RequestEncryptedAppTicket", CallingConvention = Platform.CC)]
-		private static extern SteamAPICall_t _RequestEncryptedAppTicket( IntPtr self, IntPtr pDataToInclude, int cbDataToInclude );
+		[UnmanagedFunctionPointer( Platform.MemberConvention )]
+		private delegate SteamAPICall_t FRequestEncryptedAppTicket( IntPtr self, IntPtr pDataToInclude, int cbDataToInclude );
+		private FRequestEncryptedAppTicket _RequestEncryptedAppTicket;
 		
 		#endregion
-		internal CallResult<EncryptedAppTicketResponse_t> RequestEncryptedAppTicket( IntPtr pDataToInclude, int cbDataToInclude )
+		internal async Task<EncryptedAppTicketResponse_t?> RequestEncryptedAppTicket( IntPtr pDataToInclude, int cbDataToInclude )
 		{
 			var returnValue = _RequestEncryptedAppTicket( Self, pDataToInclude, cbDataToInclude );
-			return new CallResult<EncryptedAppTicketResponse_t>( returnValue, IsServer );
+			return await EncryptedAppTicketResponse_t.GetResultAsync( returnValue );
 		}
 		
 		#region FunctionMeta
-		[DllImport( Platform.LibraryName, EntryPoint = "SteamAPI_ISteamUser_GetEncryptedAppTicket", CallingConvention = Platform.CC)]
+		[UnmanagedFunctionPointer( Platform.MemberConvention )]
 		[return: MarshalAs( UnmanagedType.I1 )]
-		private static extern bool _GetEncryptedAppTicket( IntPtr self, IntPtr pTicket, int cbMaxTicket, ref uint pcbTicket );
+		private delegate bool FGetEncryptedAppTicket( IntPtr self, IntPtr pTicket, int cbMaxTicket, ref uint pcbTicket );
+		private FGetEncryptedAppTicket _GetEncryptedAppTicket;
 		
 		#endregion
 		internal bool GetEncryptedAppTicket( IntPtr pTicket, int cbMaxTicket, ref uint pcbTicket )
@@ -262,8 +354,9 @@ namespace Steamworks
 		}
 		
 		#region FunctionMeta
-		[DllImport( Platform.LibraryName, EntryPoint = "SteamAPI_ISteamUser_GetGameBadgeLevel", CallingConvention = Platform.CC)]
-		private static extern int _GetGameBadgeLevel( IntPtr self, int nSeries, [MarshalAs( UnmanagedType.U1 )] bool bFoil );
+		[UnmanagedFunctionPointer( Platform.MemberConvention )]
+		private delegate int FGetGameBadgeLevel( IntPtr self, int nSeries, [MarshalAs( UnmanagedType.U1 )] bool bFoil );
+		private FGetGameBadgeLevel _GetGameBadgeLevel;
 		
 		#endregion
 		internal int GetGameBadgeLevel( int nSeries, [MarshalAs( UnmanagedType.U1 )] bool bFoil )
@@ -273,8 +366,9 @@ namespace Steamworks
 		}
 		
 		#region FunctionMeta
-		[DllImport( Platform.LibraryName, EntryPoint = "SteamAPI_ISteamUser_GetPlayerSteamLevel", CallingConvention = Platform.CC)]
-		private static extern int _GetPlayerSteamLevel( IntPtr self );
+		[UnmanagedFunctionPointer( Platform.MemberConvention )]
+		private delegate int FGetPlayerSteamLevel( IntPtr self );
+		private FGetPlayerSteamLevel _GetPlayerSteamLevel;
 		
 		#endregion
 		internal int GetPlayerSteamLevel()
@@ -284,20 +378,22 @@ namespace Steamworks
 		}
 		
 		#region FunctionMeta
-		[DllImport( Platform.LibraryName, EntryPoint = "SteamAPI_ISteamUser_RequestStoreAuthURL", CallingConvention = Platform.CC)]
-		private static extern SteamAPICall_t _RequestStoreAuthURL( IntPtr self, [MarshalAs( UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof( Utf8StringToNative ) )] string pchRedirectURL );
+		[UnmanagedFunctionPointer( Platform.MemberConvention )]
+		private delegate SteamAPICall_t FRequestStoreAuthURL( IntPtr self, [MarshalAs( UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof( Utf8StringToNative ) )] string pchRedirectURL );
+		private FRequestStoreAuthURL _RequestStoreAuthURL;
 		
 		#endregion
-		internal CallResult<StoreAuthURLResponse_t> RequestStoreAuthURL( [MarshalAs( UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof( Utf8StringToNative ) )] string pchRedirectURL )
+		internal async Task<StoreAuthURLResponse_t?> RequestStoreAuthURL( [MarshalAs( UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof( Utf8StringToNative ) )] string pchRedirectURL )
 		{
 			var returnValue = _RequestStoreAuthURL( Self, pchRedirectURL );
-			return new CallResult<StoreAuthURLResponse_t>( returnValue, IsServer );
+			return await StoreAuthURLResponse_t.GetResultAsync( returnValue );
 		}
 		
 		#region FunctionMeta
-		[DllImport( Platform.LibraryName, EntryPoint = "SteamAPI_ISteamUser_BIsPhoneVerified", CallingConvention = Platform.CC)]
+		[UnmanagedFunctionPointer( Platform.MemberConvention )]
 		[return: MarshalAs( UnmanagedType.I1 )]
-		private static extern bool _BIsPhoneVerified( IntPtr self );
+		private delegate bool FBIsPhoneVerified( IntPtr self );
+		private FBIsPhoneVerified _BIsPhoneVerified;
 		
 		#endregion
 		internal bool BIsPhoneVerified()
@@ -307,9 +403,10 @@ namespace Steamworks
 		}
 		
 		#region FunctionMeta
-		[DllImport( Platform.LibraryName, EntryPoint = "SteamAPI_ISteamUser_BIsTwoFactorEnabled", CallingConvention = Platform.CC)]
+		[UnmanagedFunctionPointer( Platform.MemberConvention )]
 		[return: MarshalAs( UnmanagedType.I1 )]
-		private static extern bool _BIsTwoFactorEnabled( IntPtr self );
+		private delegate bool FBIsTwoFactorEnabled( IntPtr self );
+		private FBIsTwoFactorEnabled _BIsTwoFactorEnabled;
 		
 		#endregion
 		internal bool BIsTwoFactorEnabled()
@@ -319,9 +416,10 @@ namespace Steamworks
 		}
 		
 		#region FunctionMeta
-		[DllImport( Platform.LibraryName, EntryPoint = "SteamAPI_ISteamUser_BIsPhoneIdentifying", CallingConvention = Platform.CC)]
+		[UnmanagedFunctionPointer( Platform.MemberConvention )]
 		[return: MarshalAs( UnmanagedType.I1 )]
-		private static extern bool _BIsPhoneIdentifying( IntPtr self );
+		private delegate bool FBIsPhoneIdentifying( IntPtr self );
+		private FBIsPhoneIdentifying _BIsPhoneIdentifying;
 		
 		#endregion
 		internal bool BIsPhoneIdentifying()
@@ -331,9 +429,10 @@ namespace Steamworks
 		}
 		
 		#region FunctionMeta
-		[DllImport( Platform.LibraryName, EntryPoint = "SteamAPI_ISteamUser_BIsPhoneRequiringVerification", CallingConvention = Platform.CC)]
+		[UnmanagedFunctionPointer( Platform.MemberConvention )]
 		[return: MarshalAs( UnmanagedType.I1 )]
-		private static extern bool _BIsPhoneRequiringVerification( IntPtr self );
+		private delegate bool FBIsPhoneRequiringVerification( IntPtr self );
+		private FBIsPhoneRequiringVerification _BIsPhoneRequiringVerification;
 		
 		#endregion
 		internal bool BIsPhoneRequiringVerification()
@@ -343,25 +442,15 @@ namespace Steamworks
 		}
 		
 		#region FunctionMeta
-		[DllImport( Platform.LibraryName, EntryPoint = "SteamAPI_ISteamUser_GetMarketEligibility", CallingConvention = Platform.CC)]
-		private static extern SteamAPICall_t _GetMarketEligibility( IntPtr self );
+		[UnmanagedFunctionPointer( Platform.MemberConvention )]
+		private delegate SteamAPICall_t FGetMarketEligibility( IntPtr self );
+		private FGetMarketEligibility _GetMarketEligibility;
 		
 		#endregion
-		internal CallResult<MarketEligibilityResponse_t> GetMarketEligibility()
+		internal async Task<MarketEligibilityResponse_t?> GetMarketEligibility()
 		{
 			var returnValue = _GetMarketEligibility( Self );
-			return new CallResult<MarketEligibilityResponse_t>( returnValue, IsServer );
-		}
-		
-		#region FunctionMeta
-		[DllImport( Platform.LibraryName, EntryPoint = "SteamAPI_ISteamUser_GetDurationControl", CallingConvention = Platform.CC)]
-		private static extern SteamAPICall_t _GetDurationControl( IntPtr self );
-		
-		#endregion
-		internal CallResult<DurationControl_t> GetDurationControl()
-		{
-			var returnValue = _GetDurationControl( Self );
-			return new CallResult<DurationControl_t>( returnValue, IsServer );
+			return await MarketEligibilityResponse_t.GetResultAsync( returnValue );
 		}
 		
 	}

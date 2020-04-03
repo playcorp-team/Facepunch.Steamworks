@@ -10,8 +10,7 @@ namespace Steamworks
 {
     [TestClass]
     [DeploymentItem( "steam_api64.dll" )]
-	[DeploymentItem( "steam_api.dll" )]
-	public class InventoryTest
+    public class InventoryTest
 	{
 		[TestMethod]
 		public async Task LoadItemDefinitionsAsync()
@@ -195,8 +194,8 @@ namespace Steamworks
 		{
 			await SteamInventory.WaitForDefinitions();
 
-			byte[] data;
-			int itemCount;
+			byte[] data = null;
+			int itemCount = 0;
 
 			// Serialize
 			{

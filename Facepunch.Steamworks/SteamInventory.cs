@@ -12,25 +12,32 @@ namespace Steamworks
 	/// <summary>
 	/// Undocumented Parental Settings
 	/// </summary>
-	public class SteamInventory : SteamSharedClass<SteamInventory>
+	public static class SteamInventory
 	{
-		internal static ISteamInventory Internal => Interface as ISteamInventory;
-
-		internal override void InitializeInterface( bool server )
+		static ISteamInventory _internal;
+		internal static ISteamInventory Internal
 		{
-			SetInterface( server, new ISteamInventory( server ) );
-
-			InstallEvents( server );
-		}
-	
-		internal static void InstallEvents( bool server )
-		{
-			if ( !server )
+			get
 			{
-				Dispatch.Install<SteamInventoryFullUpdate_t>( x => InventoryUpdated( x ) );
-			}
+				if ( _internal == null )
+				{ 
+					_internal = new ISteamInventory();
+					_internal.Init();
+				}
 
-			Dispatch.Install<SteamInventoryDefinitionUpdate_t>( x => LoadDefinitions(), server );
+				return _internal;
+			}
+		}
+		internal static void Shutdown()
+		{
+			_internal = null;
+		}
+
+		internal static void InstallEvents()
+		{
+			SteamInventoryFullUpdate_t.Install( x => InventoryUpdated( x ) );
+			SteamInventoryDefinitionUpdate_t.Install( x => LoadDefinitions() );
+			SteamInventoryDefinitionUpdate_t.Install( x => LoadDefinitions(), true );
 		}
 
 		private static void InventoryUpdated( SteamInventoryFullUpdate_t x )
@@ -177,7 +184,7 @@ namespace Steamworks
 		/// </summary>
 		public static bool GetAllItems()
 		{
-			var sresult = Defines.k_SteamInventoryResultInvalid;
+			var sresult = default( SteamInventoryResult_t );
 			return Internal.GetAllItems( ref sresult );
 		}
 
@@ -186,7 +193,7 @@ namespace Steamworks
 		/// </summary>
 		public static async Task<InventoryResult?> GetAllItemsAsync()
 		{
-			var sresult = Defines.k_SteamInventoryResultInvalid;
+			var sresult = default( SteamInventoryResult_t );
 
 			if ( !Internal.GetAllItems( ref sresult ) )
 				return null;
@@ -202,7 +209,7 @@ namespace Steamworks
 		/// </summary>
 		public static async Task<InventoryResult?> GenerateItemAsync( InventoryDef target, int amount )
 		{
-			var sresult = Defines.k_SteamInventoryResultInvalid;
+			var sresult = default( SteamInventoryResult_t );
 
 			var defs = new InventoryDefId[] { target.Id };
 			var cnts = new uint[] { (uint)amount };
@@ -220,7 +227,7 @@ namespace Steamworks
 		/// </summary>
 		public static async Task<InventoryResult?> CraftItemAsync( InventoryItem[] list, InventoryDef target )
 		{
-			var sresult = Defines.k_SteamInventoryResultInvalid;
+			var sresult = default( SteamInventoryResult_t );
 
 			var give = new InventoryDefId[] { target.Id };
 			var givec = new uint[] { 1 };
@@ -241,7 +248,7 @@ namespace Steamworks
 		/// </summary>
 		public static async Task<InventoryResult?> CraftItemAsync( InventoryItem.Amount[] list, InventoryDef target )
 		{
-			var sresult = Defines.k_SteamInventoryResultInvalid;
+			var sresult = default( SteamInventoryResult_t );
 
 			var give = new InventoryDefId[] { target.Id };
 			var givec = new uint[] { 1 };
@@ -283,7 +290,7 @@ namespace Steamworks
 			{
 				Marshal.Copy( data, 0, ptr, dataLength );
 
-				var sresult = Defines.k_SteamInventoryResultInvalid;
+				var sresult = default( SteamInventoryResult_t );
 
 				if ( !Internal.DeserializeResult( ref sresult, (IntPtr)ptr, (uint)dataLength, false ) )
 					return null;
@@ -304,7 +311,7 @@ namespace Steamworks
 		/// </summary>
 		public static async Task<InventoryResult?> GrantPromoItemsAsync()
 		{
-			var sresult = Defines.k_SteamInventoryResultInvalid;
+			var sresult = default( SteamInventoryResult_t );
 
 			if ( !Internal.GrantPromoItems( ref sresult ) )
 				return null;
@@ -318,7 +325,7 @@ namespace Steamworks
 		/// </summary>
 		public static async Task<InventoryResult?> TriggerItemDropAsync( InventoryDefId id )
 		{
-			var sresult = Defines.k_SteamInventoryResultInvalid;
+			var sresult = default( SteamInventoryResult_t );
 
 			if ( !Internal.TriggerItemDrop( ref sresult, id ) )
 				return null;
@@ -332,7 +339,7 @@ namespace Steamworks
 		/// </summary>
 		public static async Task<InventoryResult?> AddPromoItemAsync( InventoryDefId id )
 		{
-			var sresult = Defines.k_SteamInventoryResultInvalid;
+			var sresult = default( SteamInventoryResult_t );
 
 			if ( !Internal.AddPromoItem( ref sresult, id ) )
 				return null;

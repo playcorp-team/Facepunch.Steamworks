@@ -3,29 +3,12 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
-using System.Runtime.InteropServices;
 using System.Text;
 
 namespace Steamworks
 {
 	public static partial class Utility
     {
-        static internal T ToType<T>( this IntPtr ptr )
-        {
-            if ( ptr == IntPtr.Zero )
-                return default;
-
-            return (T)Marshal.PtrToStructure( ptr, typeof( T ) );
-        }
-
-        static internal object ToType( this IntPtr ptr, System.Type t )
-        {
-            if ( ptr == IntPtr.Zero )
-                return default;
-
-            return Marshal.PtrToStructure( ptr, t );
-        }
-
         static internal uint Swap( uint x )
         {
             return ((x & 0x000000ff) << 24) +
@@ -97,22 +80,20 @@ namespace Steamworks
             }
         }
 
-		static readonly byte[] readBuffer = new byte[1024 * 8];
-
-		public static string ReadNullTerminatedUTF8String( this BinaryReader br )
+		public static string ReadNullTerminatedUTF8String( this BinaryReader br, byte[] buffer = null )
 		{
-			lock ( readBuffer )
-			{
-				byte chr;
-				int i = 0;
-				while ( (chr = br.ReadByte()) != 0 && i < readBuffer.Length )
-				{
-					readBuffer[i] = chr;
-					i++;
-				}
+			if ( buffer == null )
+				buffer = new byte[1024];
 
-				return Encoding.UTF8.GetString( readBuffer, 0, i );
+			byte chr;
+			int i = 0;
+			while ( (chr = br.ReadByte()) != 0 && i < buffer.Length )
+			{
+				buffer[i] = chr;
+				i++;
 			}
+
+			return Encoding.UTF8.GetString( buffer, 0, i );
 		}
 	}
 }

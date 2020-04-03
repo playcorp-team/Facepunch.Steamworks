@@ -8,21 +8,31 @@ using Steamworks.Data;
 
 namespace Steamworks
 {
-	public class SteamNetworkingSockets : SteamSharedClass<SteamNetworkingSockets>
+	public static class SteamNetworkingSockets
 	{
-		internal static ISteamNetworkingSockets Internal => Interface as ISteamNetworkingSockets;
-
-		internal override void InitializeInterface( bool server )
+		static ISteamNetworkingSockets _internal;
+		internal static ISteamNetworkingSockets Internal
 		{
-			SetInterface( server, new ISteamNetworkingSockets( server ) );
-			InstallEvents( server );
+			get
+			{
+				if ( _internal == null )
+				{
+					_internal = new ISteamNetworkingSockets();
+					_internal.Init();
+
+					SocketInterfaces = new Dictionary<uint, SocketInterface>();
+					ConnectionInterfaces = new Dictionary<uint, ConnectionInterface>();
+				}
+
+				return _internal;
+			}
 		}
-	
-#region SocketInterface
 
-		static readonly Dictionary<uint, SocketManager> SocketInterfaces = new Dictionary<uint, SocketManager>();
+		#region SocketInterface
 
-		internal static SocketManager GetSocketManager( uint id )
+		static Dictionary<uint, SocketInterface> SocketInterfaces;
+
+		internal static SocketInterface GetSocketInterface( uint id )
 		{
 			if ( SocketInterfaces == null ) return null;
 			if ( id == 0 ) throw new System.ArgumentException( "Invalid Socket" );
@@ -33,17 +43,20 @@ namespace Steamworks
 			return null;
 		}
 
-		internal static void SetSocketManager( uint id, SocketManager manager )
+		internal static void SetSocketInterface( uint id, SocketInterface iface )
 		{
 			if ( id == 0 ) throw new System.ArgumentException( "Invalid Socket" );
-			SocketInterfaces[id] = manager;
+
+			Console.WriteLine( $"Installing Socket For {id}" );
+			SocketInterfaces[id] = iface;
 		}
-#endregion
+		#endregion
 
-#region ConnectionInterface
-		static readonly Dictionary<uint, ConnectionManager> ConnectionInterfaces = new Dictionary<uint, ConnectionManager>();
+		#region ConnectionInterface
+		static Dictionary<uint, ConnectionInterface> ConnectionInterfaces;
 
-		internal static ConnectionManager GetConnectionManager( uint id )
+
+		internal static ConnectionInterface GetConnectionInterface( uint id )
 		{
 			if ( ConnectionInterfaces == null ) return null;
 			if ( id == 0 ) return null;
@@ -54,20 +67,24 @@ namespace Steamworks
 			return null;
 		}
 
-		internal static void SetConnectionManager( uint id, ConnectionManager manager )
+		internal static void SetConnectionInterface( uint id, ConnectionInterface iface )
 		{
 			if ( id == 0 ) throw new System.ArgumentException( "Invalid Connection" );
-			ConnectionInterfaces[id] = manager;
+			ConnectionInterfaces[id] = iface;
 		}
-#endregion
+		#endregion
 
-
-
-		internal void InstallEvents( bool server )
+		internal static void Shutdown()
 		{
-			Dispatch.Install<SteamNetConnectionStatusChangedCallback_t>( ConnectionStatusChanged, server );
+			_internal = null;
+			SocketInterfaces = null;
+			ConnectionInterfaces = null;
 		}
 
+		internal static void InstallEvents( bool server = false )
+		{
+			SteamNetConnectionStatusChangedCallback_t.Install( x => ConnectionStatusChanged( x ), server );
+		}
 
 		private static void ConnectionStatusChanged( SteamNetConnectionStatusChangedCallback_t data )
 		{
@@ -76,12 +93,12 @@ namespace Steamworks
 			//
 			if ( data.Nfo.listenSocket.Id > 0 )
 			{
-				var iface = GetSocketManager( data.Nfo.listenSocket.Id );
+				var iface = GetSocketInterface( data.Nfo.listenSocket.Id );
 				iface?.OnConnectionChanged( data.Conn, data.Nfo );
 			}
 			else
 			{
-				var iface = GetConnectionManager( data.Conn.Id );
+				var iface = GetConnectionInterface( data.Conn.Id );
 				iface?.OnConnectionChanged( data.Nfo );
 			}
 
@@ -94,100 +111,46 @@ namespace Steamworks
 		/// <summary>
 		/// Creates a "server" socket that listens for clients to connect to by calling
 		/// Connect, over ordinary UDP (IPv4 or IPv6)
-		/// 
-		/// To use this derive a class from SocketManager and override as much as you want.
-		/// 
 		/// </summary>
-		public static T CreateNormalSocket<T>( NetAddress address ) where T : SocketManager, new()
+		public static T CreateNormalSocket<T>( NetAddress address ) where T : SocketInterface, new()
 		{
 			var t = new T();
-			var options = Array.Empty<NetKeyValue>();
-			t.Socket = Internal.CreateListenSocketIP( ref address, options.Length, options );
-			t.Initialize();
-
-			SetSocketManager( t.Socket.Id, t );
-			return t;
-		}
-
-		/// <summary>
-		/// Creates a "server" socket that listens for clients to connect to by calling
-		/// Connect, over ordinary UDP (IPv4 or IPv6).
-		/// 
-		/// To use this you should pass a class that inherits ISocketManager. You can use
-		/// SocketManager to get connections and send messages, but the ISocketManager class
-		/// will received all the appropriate callbacks.
-		/// 
-		/// </summary>
-		public static SocketManager CreateNormalSocket( NetAddress address, ISocketManager intrface )
-		{
-			var options = Array.Empty<NetKeyValue>();
-			var socket = Internal.CreateListenSocketIP( ref address, options.Length, options );
-
-			var t = new SocketManager
-			{
-				Socket = socket,
-				Interface = intrface
-			};
-
-			t.Initialize();
-
-			SetSocketManager( t.Socket.Id, t );
+			t.Socket = Internal.CreateListenSocketIP( ref address );
+			SetSocketInterface( t.Socket.Id, t );
 			return t;
 		}
 
 		/// <summary>
 		/// Connect to a socket created via <method>CreateListenSocketIP</method>
 		/// </summary>
-		public static T ConnectNormal<T>( NetAddress address ) where T : ConnectionManager, new()
+		public static T ConnectNormal<T>( NetAddress address ) where T : ConnectionInterface, new()
 		{
 			var t = new T();
-			var options = Array.Empty<NetKeyValue>();
-			t.Connection = Internal.ConnectByIPAddress( ref address, options.Length, options );
-			SetConnectionManager( t.Connection.Id, t );
-			return t;
-		}
-
-		/// <summary>
-		/// Connect to a socket created via <method>CreateListenSocketIP</method>
-		/// </summary>
-		public static ConnectionManager ConnectNormal( NetAddress address, IConnectionManager iface )
-		{
-			var options = Array.Empty<NetKeyValue>();
-			var connection = Internal.ConnectByIPAddress( ref address, options.Length, options );
-
-			var t = new ConnectionManager
-			{
-				Connection = connection,
-				Interface = iface
-			};
-
-			SetConnectionManager( t.Connection.Id, t );
+			t.Connection = Internal.ConnectByIPAddress( ref address );
+			SetConnectionInterface( t.Connection.Id, t );
 			return t;
 		}
 
 		/// <summary>
 		/// Creates a server that will be relayed via Valve's network (hiding the IP and improving ping)
 		/// </summary>
-		public static T CreateRelaySocket<T>( int virtualport = 0 ) where T : SocketManager, new()
+		public static T CreateRelaySocket<T>( int virtualport = 0 ) where T : SocketInterface, new()
 		{
 			var t = new T();
-			var options = Array.Empty<NetKeyValue>();
-			t.Socket = Internal.CreateListenSocketP2P( virtualport, options.Length, options );
-			t.Initialize();
-			SetSocketManager( t.Socket.Id, t );
+			t.Socket = Internal.CreateListenSocketP2P( virtualport );
+			SetSocketInterface( t.Socket.Id, t );
 			return t;
 		}
 
 		/// <summary>
 		/// Connect to a relay server
 		/// </summary>
-		public static T ConnectRelay<T>( SteamId serverId, int virtualport = 0 ) where T : ConnectionManager, new()
+		public static T ConnectRelay<T>( SteamId serverId, int virtualport = 0 ) where T : ConnectionInterface, new()
 		{
 			var t = new T();
 			NetIdentity identity = serverId;
-			var options = Array.Empty<NetKeyValue>();
-			t.Connection = Internal.ConnectP2P( ref identity, virtualport, options.Length, options );
-			SetConnectionManager( t.Connection.Id, t );
+			t.Connection = Internal.ConnectP2P( ref identity, virtualport );
+			SetConnectionInterface( t.Connection.Id, t );
 			return t;
 		}
 	}

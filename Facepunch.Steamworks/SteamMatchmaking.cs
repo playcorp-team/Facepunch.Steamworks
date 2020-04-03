@@ -10,34 +10,48 @@ namespace Steamworks
 	/// <summary>
 	/// Functions for clients to access matchmaking services, favorites, and to operate on game lobbies
 	/// </summary>
-	public class SteamMatchmaking : SteamClientClass<SteamMatchmaking>
+	public static class SteamMatchmaking
 	{
-		internal static ISteamMatchmaking Internal => Interface as ISteamMatchmaking;
-
-		internal override void InitializeInterface( bool server )
-		{
-			SetInterface( server, new ISteamMatchmaking( server ) );
-
-			InstallEvents();
-		}
-	
 		/// <summary>
 		/// Maximum number of characters a lobby metadata key can be
 		/// </summary>
 		internal static int MaxLobbyKeyLength => 255;
 
 
+		static ISteamMatchmaking _internal;
+
+		internal static ISteamMatchmaking Internal
+		{
+			get
+			{
+				SteamClient.ValidCheck();
+
+				if ( _internal == null )
+				{
+					_internal = new ISteamMatchmaking();
+					_internal.Init();
+				}
+
+				return _internal;
+			}
+		}
+
+		internal static void Shutdown()
+		{
+			_internal = null;
+		}
+
 		internal static void InstallEvents()
 		{
-			Dispatch.Install<LobbyInvite_t>( x => OnLobbyInvite?.Invoke( new Friend( x.SteamIDUser ), new Lobby( x.SteamIDLobby ) ) );
+			LobbyInvite_t.Install( x => OnLobbyInvite?.Invoke( new Friend( x.SteamIDUser ), new Lobby( x.SteamIDLobby ) ) );
 
-			Dispatch.Install<LobbyEnter_t>( x => OnLobbyEntered?.Invoke( new Lobby( x.SteamIDLobby ) ) );
+			LobbyEnter_t.Install( x => OnLobbyEntered?.Invoke( new Lobby( x.SteamIDLobby ) ) );
 
-			Dispatch.Install<LobbyCreated_t>( x => OnLobbyCreated?.Invoke( x.Result, new Lobby( x.SteamIDLobby ) ) );
+			LobbyCreated_t.Install( x => OnLobbyCreated?.Invoke( x.Result, new Lobby( x.SteamIDLobby ) ) );
 
-			Dispatch.Install<LobbyGameCreated_t>( x => OnLobbyGameCreated?.Invoke( new Lobby( x.SteamIDLobby ), x.IP, x.Port, x.SteamIDGameServer ) );
+			LobbyGameCreated_t.Install( x => OnLobbyGameCreated?.Invoke( new Lobby( x.SteamIDLobby ), x.IP, x.Port, x.SteamIDGameServer ) );
 
-			Dispatch.Install<LobbyDataUpdate_t>( x =>
+			LobbyDataUpdate_t.Install( x =>
 			{
 				if ( x.Success == 0 ) return;
 
@@ -47,7 +61,7 @@ namespace Steamworks
 					OnLobbyMemberDataChanged?.Invoke( new Lobby( x.SteamIDLobby ), new Friend( x.SteamIDMember ) );
 			} );
 
-			Dispatch.Install<LobbyChatUpdate_t>( x =>
+			LobbyChatUpdate_t.Install( x =>
 			{
 				if ( (x.GfChatMemberStateChange & (int)ChatMemberStateChange.Entered) != 0 )
 					OnLobbyMemberJoined?.Invoke( new Lobby( x.SteamIDLobby ), new Friend( x.SteamIDUserChanged ) );
@@ -65,7 +79,7 @@ namespace Steamworks
 					OnLobbyMemberBanned?.Invoke( new Lobby( x.SteamIDLobby ), new Friend( x.SteamIDUserChanged ), new Friend( x.SteamIDMakingChange ) );
 			} );
 
-			Dispatch.Install<LobbyChatMsg_t>( OnLobbyChatMessageRecievedAPI );
+			LobbyChatMsg_t.Install( OnLobbyChatMessageRecievedAPI );
 		}
 
 		static private unsafe void OnLobbyChatMessageRecievedAPI( LobbyChatMsg_t callback )

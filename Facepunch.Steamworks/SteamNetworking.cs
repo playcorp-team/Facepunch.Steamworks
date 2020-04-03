@@ -8,21 +8,32 @@ using Steamworks.Data;
 
 namespace Steamworks
 {
-	public class SteamNetworking : SteamSharedClass<SteamNetworking>
+	public static class SteamNetworking
 	{
-		internal static ISteamNetworking Internal => Interface as ISteamNetworking;
-
-		internal override void InitializeInterface( bool server )
+		static ISteamNetworking _internal;
+		internal static ISteamNetworking Internal
 		{
-			SetInterface( server, new ISteamNetworking( server ) );
+			get
+			{
+				if ( _internal == null )
+				{
+					_internal = new ISteamNetworking();
+					_internal.Init();
+				}
 
-			InstallEvents( server );
+				return _internal;
+			}
 		}
 
-		internal static void InstallEvents( bool server )
+		internal static void Shutdown()
 		{
-			Dispatch.Install<P2PSessionRequest_t>( x => OnP2PSessionRequest?.Invoke( x.SteamIDRemote ), server );
-			Dispatch.Install<P2PSessionConnectFail_t>( x => OnP2PConnectionFailed?.Invoke( x.SteamIDRemote, (P2PSessionError) x.P2PSessionError ), server );
+			_internal = null;
+		}
+
+		internal static void InstallEvents()
+		{
+			P2PSessionRequest_t.Install( x => OnP2PSessionRequest?.Invoke( x.SteamIDRemote ) );
+			P2PSessionConnectFail_t.Install( x => OnP2PConnectionFailed?.Invoke( x.SteamIDRemote, (P2PSessionError) x.P2PSessionError ) );
 		}
 
 		/// <summary>
@@ -65,6 +76,13 @@ namespace Steamworks
 		{
 			uint _ = 0;
 			return Internal.IsP2PPacketAvailable( ref _, channel );
+		}
+/// <summary>
+		/// Checks if a P2P packet is available to read, and gets the size of the message if there is one.
+		/// </summary>
+		public static bool IsP2PPacketAvailable(ref uint size, int channel = 0 ) {
+
+			return Internal.IsP2PPacketAvailable( ref size, channel );
 		}
 
 		/// <summary>
@@ -114,6 +132,17 @@ namespace Steamworks
 			return Internal.ReadP2PPacket( (IntPtr)buffer, cbuf, ref size, ref steamid, channel );
 		}
 
+		public unsafe static bool ReadP2PPacketRaw(byte* bytePointer, uint bufferLength, ref uint size, out SteamId steamId,  int channel = 0)
+		{
+			steamId = 1;
+
+			if (!Internal.IsP2PPacketAvailable(ref size, channel))
+				return false;
+			
+			return Internal.ReadP2PPacket( (IntPtr)bytePointer, bufferLength, ref size, ref steamId, channel ) || size == 0;
+
+
+		}
 		/// <summary>
 		/// Sends a P2P packet to the specified user.
 		/// This is a session-less API which automatically establishes NAT-traversing or Steam relay server connections.
@@ -129,6 +158,8 @@ namespace Steamworks
 				return Internal.SendP2PPacket( steamid, (IntPtr)p, (uint)length, (P2PSend)sendType, nChannel );
 			}
 		}
+		
+		public static unsafe bool SendP2PPacket(SteamId steamid, byte* bytePointer, uint length, P2PSend sendType, int nChannel ) => Internal.SendP2PPacket( steamid, (IntPtr)bytePointer, length, sendType, nChannel ); 
 
 		/// <summary>
 		/// Sends a P2P packet to the specified user.

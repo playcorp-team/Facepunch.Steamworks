@@ -10,8 +10,7 @@ namespace Steamworks
 {
     [TestClass]
     [DeploymentItem( "steam_api64.dll" )]
-	[DeploymentItem( "steam_api.dll" )]
-	public class SteamMatchmakingTest
+    public class SteamMatchmakingTest
 	{
 		[TestMethod]
 		public async Task LobbyList()

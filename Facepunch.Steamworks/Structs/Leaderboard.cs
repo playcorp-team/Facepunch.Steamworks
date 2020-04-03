@@ -17,10 +17,9 @@ namespace Steamworks.Data
 		public string Name => SteamUserStats.Internal.GetLeaderboardName( Id );
 		public LeaderboardSort Sort => SteamUserStats.Internal.GetLeaderboardSortMethod( Id );
 		public LeaderboardDisplay Display => SteamUserStats.Internal.GetLeaderboardDisplayType( Id );
-		public int EntryCount => SteamUserStats.Internal.GetLeaderboardEntryCount(Id);
 
 		static int[] detailsBuffer = new int[64];
-		static int[] noDetails = Array.Empty<int>();
+		static int[] noDetails = new int[0];
 
 		/// <summary>
 		/// Submit your score and replace your old score even if it was better
@@ -122,7 +121,7 @@ namespace Steamworks.Data
 			return output;
 		}
 
-		internal static async Task WaitForUserNames( LeaderboardEntry[] entries)
+		internal async Task WaitForUserNames( LeaderboardEntry[] entries)
 		{
 			bool gotAll = false;
 			while ( !gotAll )

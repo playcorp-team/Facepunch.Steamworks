@@ -9,20 +9,39 @@ namespace Steamworks
 {
 	internal class ISteamScreenshots : SteamInterface
 	{
+		public override string InterfaceName => "STEAMSCREENSHOTS_INTERFACE_VERSION003";
 		
-		internal ISteamScreenshots( bool IsGameServer )
+		public override void InitInternals()
 		{
-			SetupInterface( IsGameServer );
+			_WriteScreenshot = Marshal.GetDelegateForFunctionPointer<FWriteScreenshot>( Marshal.ReadIntPtr( VTable, Platform.MemoryOffset( 0 ) ) );
+			_AddScreenshotToLibrary = Marshal.GetDelegateForFunctionPointer<FAddScreenshotToLibrary>( Marshal.ReadIntPtr( VTable, Platform.MemoryOffset( 8 ) ) );
+			_TriggerScreenshot = Marshal.GetDelegateForFunctionPointer<FTriggerScreenshot>( Marshal.ReadIntPtr( VTable, Platform.MemoryOffset( 16 ) ) );
+			_HookScreenshots = Marshal.GetDelegateForFunctionPointer<FHookScreenshots>( Marshal.ReadIntPtr( VTable, Platform.MemoryOffset( 24 ) ) );
+			_SetLocation = Marshal.GetDelegateForFunctionPointer<FSetLocation>( Marshal.ReadIntPtr( VTable, Platform.MemoryOffset( 32 ) ) );
+			_TagUser = Marshal.GetDelegateForFunctionPointer<FTagUser>( Marshal.ReadIntPtr( VTable, Platform.MemoryOffset( 40 ) ) );
+			_TagPublishedFile = Marshal.GetDelegateForFunctionPointer<FTagPublishedFile>( Marshal.ReadIntPtr( VTable, Platform.MemoryOffset( 48 ) ) );
+			_IsScreenshotsHooked = Marshal.GetDelegateForFunctionPointer<FIsScreenshotsHooked>( Marshal.ReadIntPtr( VTable, Platform.MemoryOffset( 56 ) ) );
+			_AddVRScreenshotToLibrary = Marshal.GetDelegateForFunctionPointer<FAddVRScreenshotToLibrary>( Marshal.ReadIntPtr( VTable, Platform.MemoryOffset( 64 ) ) );
+		}
+		internal override void Shutdown()
+		{
+			base.Shutdown();
+			
+			_WriteScreenshot = null;
+			_AddScreenshotToLibrary = null;
+			_TriggerScreenshot = null;
+			_HookScreenshots = null;
+			_SetLocation = null;
+			_TagUser = null;
+			_TagPublishedFile = null;
+			_IsScreenshotsHooked = null;
+			_AddVRScreenshotToLibrary = null;
 		}
 		
-		[DllImport( Platform.LibraryName, EntryPoint = "SteamAPI_SteamScreenshots_v003", CallingConvention = Platform.CC)]
-		internal static extern IntPtr SteamAPI_SteamScreenshots_v003();
-		public override IntPtr GetUserInterfacePointer() => SteamAPI_SteamScreenshots_v003();
-		
-		
 		#region FunctionMeta
-		[DllImport( Platform.LibraryName, EntryPoint = "SteamAPI_ISteamScreenshots_WriteScreenshot", CallingConvention = Platform.CC)]
-		private static extern ScreenshotHandle _WriteScreenshot( IntPtr self, IntPtr pubRGB, uint cubRGB, int nWidth, int nHeight );
+		[UnmanagedFunctionPointer( Platform.MemberConvention )]
+		private delegate ScreenshotHandle FWriteScreenshot( IntPtr self, IntPtr pubRGB, uint cubRGB, int nWidth, int nHeight );
+		private FWriteScreenshot _WriteScreenshot;
 		
 		#endregion
 		internal ScreenshotHandle WriteScreenshot( IntPtr pubRGB, uint cubRGB, int nWidth, int nHeight )
@@ -32,8 +51,9 @@ namespace Steamworks
 		}
 		
 		#region FunctionMeta
-		[DllImport( Platform.LibraryName, EntryPoint = "SteamAPI_ISteamScreenshots_AddScreenshotToLibrary", CallingConvention = Platform.CC)]
-		private static extern ScreenshotHandle _AddScreenshotToLibrary( IntPtr self, [MarshalAs( UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof( Utf8StringToNative ) )] string pchFilename, [MarshalAs( UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof( Utf8StringToNative ) )] string pchThumbnailFilename, int nWidth, int nHeight );
+		[UnmanagedFunctionPointer( Platform.MemberConvention )]
+		private delegate ScreenshotHandle FAddScreenshotToLibrary( IntPtr self, [MarshalAs( UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof( Utf8StringToNative ) )] string pchFilename, [MarshalAs( UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof( Utf8StringToNative ) )] string pchThumbnailFilename, int nWidth, int nHeight );
+		private FAddScreenshotToLibrary _AddScreenshotToLibrary;
 		
 		#endregion
 		internal ScreenshotHandle AddScreenshotToLibrary( [MarshalAs( UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof( Utf8StringToNative ) )] string pchFilename, [MarshalAs( UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof( Utf8StringToNative ) )] string pchThumbnailFilename, int nWidth, int nHeight )
@@ -43,8 +63,9 @@ namespace Steamworks
 		}
 		
 		#region FunctionMeta
-		[DllImport( Platform.LibraryName, EntryPoint = "SteamAPI_ISteamScreenshots_TriggerScreenshot", CallingConvention = Platform.CC)]
-		private static extern void _TriggerScreenshot( IntPtr self );
+		[UnmanagedFunctionPointer( Platform.MemberConvention )]
+		private delegate void FTriggerScreenshot( IntPtr self );
+		private FTriggerScreenshot _TriggerScreenshot;
 		
 		#endregion
 		internal void TriggerScreenshot()
@@ -53,8 +74,9 @@ namespace Steamworks
 		}
 		
 		#region FunctionMeta
-		[DllImport( Platform.LibraryName, EntryPoint = "SteamAPI_ISteamScreenshots_HookScreenshots", CallingConvention = Platform.CC)]
-		private static extern void _HookScreenshots( IntPtr self, [MarshalAs( UnmanagedType.U1 )] bool bHook );
+		[UnmanagedFunctionPointer( Platform.MemberConvention )]
+		private delegate void FHookScreenshots( IntPtr self, [MarshalAs( UnmanagedType.U1 )] bool bHook );
+		private FHookScreenshots _HookScreenshots;
 		
 		#endregion
 		internal void HookScreenshots( [MarshalAs( UnmanagedType.U1 )] bool bHook )
@@ -63,9 +85,10 @@ namespace Steamworks
 		}
 		
 		#region FunctionMeta
-		[DllImport( Platform.LibraryName, EntryPoint = "SteamAPI_ISteamScreenshots_SetLocation", CallingConvention = Platform.CC)]
+		[UnmanagedFunctionPointer( Platform.MemberConvention )]
 		[return: MarshalAs( UnmanagedType.I1 )]
-		private static extern bool _SetLocation( IntPtr self, ScreenshotHandle hScreenshot, [MarshalAs( UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof( Utf8StringToNative ) )] string pchLocation );
+		private delegate bool FSetLocation( IntPtr self, ScreenshotHandle hScreenshot, [MarshalAs( UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof( Utf8StringToNative ) )] string pchLocation );
+		private FSetLocation _SetLocation;
 		
 		#endregion
 		internal bool SetLocation( ScreenshotHandle hScreenshot, [MarshalAs( UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof( Utf8StringToNative ) )] string pchLocation )
@@ -75,9 +98,10 @@ namespace Steamworks
 		}
 		
 		#region FunctionMeta
-		[DllImport( Platform.LibraryName, EntryPoint = "SteamAPI_ISteamScreenshots_TagUser", CallingConvention = Platform.CC)]
+		[UnmanagedFunctionPointer( Platform.MemberConvention )]
 		[return: MarshalAs( UnmanagedType.I1 )]
-		private static extern bool _TagUser( IntPtr self, ScreenshotHandle hScreenshot, SteamId steamID );
+		private delegate bool FTagUser( IntPtr self, ScreenshotHandle hScreenshot, SteamId steamID );
+		private FTagUser _TagUser;
 		
 		#endregion
 		internal bool TagUser( ScreenshotHandle hScreenshot, SteamId steamID )
@@ -87,9 +111,10 @@ namespace Steamworks
 		}
 		
 		#region FunctionMeta
-		[DllImport( Platform.LibraryName, EntryPoint = "SteamAPI_ISteamScreenshots_TagPublishedFile", CallingConvention = Platform.CC)]
+		[UnmanagedFunctionPointer( Platform.MemberConvention )]
 		[return: MarshalAs( UnmanagedType.I1 )]
-		private static extern bool _TagPublishedFile( IntPtr self, ScreenshotHandle hScreenshot, PublishedFileId unPublishedFileID );
+		private delegate bool FTagPublishedFile( IntPtr self, ScreenshotHandle hScreenshot, PublishedFileId unPublishedFileID );
+		private FTagPublishedFile _TagPublishedFile;
 		
 		#endregion
 		internal bool TagPublishedFile( ScreenshotHandle hScreenshot, PublishedFileId unPublishedFileID )
@@ -99,9 +124,10 @@ namespace Steamworks
 		}
 		
 		#region FunctionMeta
-		[DllImport( Platform.LibraryName, EntryPoint = "SteamAPI_ISteamScreenshots_IsScreenshotsHooked", CallingConvention = Platform.CC)]
+		[UnmanagedFunctionPointer( Platform.MemberConvention )]
 		[return: MarshalAs( UnmanagedType.I1 )]
-		private static extern bool _IsScreenshotsHooked( IntPtr self );
+		private delegate bool FIsScreenshotsHooked( IntPtr self );
+		private FIsScreenshotsHooked _IsScreenshotsHooked;
 		
 		#endregion
 		internal bool IsScreenshotsHooked()
@@ -111,8 +137,9 @@ namespace Steamworks
 		}
 		
 		#region FunctionMeta
-		[DllImport( Platform.LibraryName, EntryPoint = "SteamAPI_ISteamScreenshots_AddVRScreenshotToLibrary", CallingConvention = Platform.CC)]
-		private static extern ScreenshotHandle _AddVRScreenshotToLibrary( IntPtr self, VRScreenshotType eType, [MarshalAs( UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof( Utf8StringToNative ) )] string pchFilename, [MarshalAs( UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof( Utf8StringToNative ) )] string pchVRFilename );
+		[UnmanagedFunctionPointer( Platform.MemberConvention )]
+		private delegate ScreenshotHandle FAddVRScreenshotToLibrary( IntPtr self, VRScreenshotType eType, [MarshalAs( UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof( Utf8StringToNative ) )] string pchFilename, [MarshalAs( UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof( Utf8StringToNative ) )] string pchVRFilename );
+		private FAddVRScreenshotToLibrary _AddVRScreenshotToLibrary;
 		
 		#endregion
 		internal ScreenshotHandle AddVRScreenshotToLibrary( VRScreenshotType eType, [MarshalAs( UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof( Utf8StringToNative ) )] string pchFilename, [MarshalAs( UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof( Utf8StringToNative ) )] string pchVRFilename )

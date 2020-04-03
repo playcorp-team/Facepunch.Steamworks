@@ -10,24 +10,39 @@ namespace Steamworks
 	/// <summary>
 	/// Provides the core of the Steam Game Servers API
 	/// </summary>
-	public partial class SteamServer : SteamServerClass<SteamServer>
+	public static partial class SteamServer
 	{
-		internal static ISteamGameServer Internal => Interface as ISteamGameServer;
+		static bool initialized;
 
-		internal override void InitializeInterface( bool server )
+		static ISteamGameServer _internal;
+		internal static ISteamGameServer Internal
 		{
-			SetInterface( server, new ISteamGameServer( server ) );
-			InstallEvents();
+			get
+			{
+				if ( _internal == null )
+				{
+					_internal = new ISteamGameServer( );
+					_internal.InitServer();
+				}
+
+				return _internal;
+			}
 		}
 
-		public static bool IsValid => Internal != null && Internal.IsValid;
+		public static bool IsValid => initialized;
+
+
+		public static Action<Exception> OnCallbackException;
 
 		internal static void InstallEvents()
 		{
-            Dispatch.Install<ValidateAuthTicketResponse_t>( x => OnValidateAuthTicketResponse?.Invoke( x.SteamID, x.OwnerSteamID, x.AuthSessionResponse ), true );
-			Dispatch.Install<SteamServersConnected_t>( x => OnSteamServersConnected?.Invoke(), true );
-			Dispatch.Install<SteamServerConnectFailure_t>( x => OnSteamServerConnectFailure?.Invoke( x.Result, x.StillRetrying ), true );
-			Dispatch.Install<SteamServersDisconnected_t>( x => OnSteamServersDisconnected?.Invoke( x.Result ), true );
+			SteamInventory.InstallEvents();
+            SteamNetworkingSockets.InstallEvents(true);
+
+            ValidateAuthTicketResponse_t.Install( x => OnValidateAuthTicketResponse?.Invoke( x.SteamID, x.OwnerSteamID, x.AuthSessionResponse ), true );
+			SteamServersConnected_t.Install( x => OnSteamServersConnected?.Invoke(), true );
+			SteamServerConnectFailure_t.Install( x => OnSteamServerConnectFailure?.Invoke( x.Result, x.StillRetrying ), true );
+			SteamServersDisconnected_t.Install( x => OnSteamServersDisconnected?.Invoke( x.Result ), true );
 		}
 
 		/// <summary>
@@ -58,9 +73,6 @@ namespace Steamworks
 		/// </summary>
 		public static void Init( AppId appid, SteamServerInit init, bool asyncCallbacks = true )
 		{
-			if ( IsValid )
-				throw new System.Exception( "Calling SteamServer.Init but is already initialized" );
-
 			uint ipaddress = 0; // Any Port
 
 			if ( init.SteamPort == 0 )
@@ -81,24 +93,7 @@ namespace Steamworks
 				throw new System.Exception( $"InitGameServer returned false ({ipaddress},{init.SteamPort},{init.GamePort},{init.QueryPort},{secure},\"{init.VersionString}\")" );
 			}
 
-			//
-			// Dispatch is responsible for pumping the
-			// event loop.
-			//
-			Dispatch.Init();
-			Dispatch.ServerPipe = SteamGameServer.GetHSteamPipe();
-
-			AddInterface<SteamServer>();
-			AddInterface<SteamUtils>();
-			AddInterface<SteamNetworking>();
-			AddInterface<SteamServerStats>();
-			//AddInterface<ISteamHTTP>();
-			AddInterface<SteamInventory>();
-			AddInterface<SteamUGC>();
-			AddInterface<SteamApps>();
-
-			AddInterface<SteamNetworkingUtils>();
-			AddInterface<SteamNetworkingSockets>();
+			initialized = true;
 
 			//
 			// Initial settings
@@ -112,41 +107,65 @@ namespace Steamworks
 			Passworded = false;
 			DedicatedServer = init.DedicatedServer;
 
+			InstallEvents();
+
 			if ( asyncCallbacks )
 			{
-				//
-				// This will keep looping in the background every 16 ms
-				// until we shut down.
-				//
-				Dispatch.LoopServerAsync();
+				RunCallbacksAsync();
 			}
 		}
 
-		internal static void AddInterface<T>() where T : SteamClass, new()
-		{
-			var t = new T();
-			t.InitializeInterface( true );
-			openInterfaces.Add( t );
-		}
+		static List<SteamInterface> openIterfaces = new List<SteamInterface>();
 
-		static readonly List<SteamClass> openInterfaces = new List<SteamClass>();
+		internal static void WatchInterface( SteamInterface steamInterface )
+		{
+			if ( openIterfaces.Contains( steamInterface ) )
+				throw new System.Exception( "openIterfaces already contains interface!" );
+
+			openIterfaces.Add( steamInterface );
+		}
 
 		internal static void ShutdownInterfaces()
 		{
-			foreach ( var e in openInterfaces )
+			foreach ( var e in openIterfaces )
 			{
-				e.DestroyInterface( true );
+				e.Shutdown();
 			}
 
-			openInterfaces.Clear();
+			openIterfaces.Clear();
 		}
 
 		public static void Shutdown()
 		{
-			Dispatch.ShutdownServer();
+			Event.DisposeAllServer();
+
+			initialized = false;
+
+			_internal = null;
 
 			ShutdownInterfaces();
+			SteamNetworkingUtils.Shutdown();
+			SteamNetworkingSockets.Shutdown();
+			SteamInventory.Shutdown();
+
 			SteamGameServer.Shutdown();
+		}
+
+		internal static async void RunCallbacksAsync()
+		{
+			while ( IsValid )
+			{
+				try
+				{
+					RunCallbacks();
+				}
+				catch ( System.Exception e )
+				{
+					OnCallbackException?.Invoke( e );
+				}
+
+				await Task.Delay( 16 );
+			}
 		}
 
 		/// <summary>
@@ -154,10 +173,7 @@ namespace Steamworks
 		/// </summary>
 		public static void RunCallbacks()
 		{
-			if ( Dispatch.ServerPipe != 0 )
-			{
-				Dispatch.Frame( Dispatch.ServerPipe );
-			}
+			SteamGameServer.RunCallbacks();
 		}
 
 		/// <summary>
@@ -297,7 +313,16 @@ namespace Steamworks
 		/// current public ip address. Be aware that this is likely to return
 		/// null for the first few seconds after initialization.
 		/// </summary>
-		public static System.Net.IPAddress PublicIp => Internal.GetPublicIP();
+		public static System.Net.IPAddress PublicIp
+		{
+			get
+			{
+				var ip = Internal.GetPublicIP();
+				if ( ip == 0 ) return null;
+
+				return Utility.Int32ToIp( ip );
+			}
+		}
 
 		/// <summary>
 		/// Enable or disable heartbeats, which are sent regularly to the master server.
@@ -439,14 +464,6 @@ namespace Steamworks
 		public static unsafe void HandleIncomingPacket( IntPtr ptr, int size, uint address, ushort port )
 		{
 			Internal.HandleIncomingPacket( ptr, size, address, port );
-		}		
-		
-		/// <summary>
-		/// Does the user own this app (which could be DLC)
-		/// </summary>
-		public static UserHasLicenseForAppResult UserHasLicenseForApp( SteamId steamid, AppId appid )
-		{
-			return Internal.UserHasLicenseForApp( steamid, appid );
 		}
 	}
 }

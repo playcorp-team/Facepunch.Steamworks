@@ -5,8 +5,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace Steamworks
 {
     [DeploymentItem( "steam_api64.dll" )]
-	[DeploymentItem( "steam_api.dll" )]
-	[TestClass]
+    [TestClass]
     public partial class GameServerTest
     {
         [TestMethod]

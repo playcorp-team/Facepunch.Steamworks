@@ -10,8 +10,7 @@ namespace Steamworks
 {
     [TestClass]
     [DeploymentItem( "steam_api64.dll" )]
-	[DeploymentItem( "steam_api.dll" )]
-	public class UgcQueryTests
+    public class UgcQueryTests
     {
 		[TestMethod]
         public async Task QueryAll()

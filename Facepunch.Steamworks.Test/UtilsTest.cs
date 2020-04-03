@@ -9,8 +9,7 @@ namespace Steamworks
 {
     [TestClass]
     [DeploymentItem( "steam_api64.dll" )]
-	[DeploymentItem( "steam_api.dll" )]
-	public class UtilsTest
+    public class UtilsTest
     {
 		[TestMethod]
         public void SecondsSinceAppActive()

@@ -10,8 +10,7 @@ namespace Steamworks
 {
     [TestClass]
     [DeploymentItem( "steam_api64.dll" )]
-	[DeploymentItem( "steam_api.dll" )]
-	public class UgcEditor
+    public class UgcEditor
     {
 		[TestMethod]
         public async Task CreateFile()
@@ -130,7 +129,7 @@ namespace Steamworks
 		[TestMethod]
 		public async Task CreateAndThenEditFile()
 		{
-			PublishedFileId fileid;
+			PublishedFileId fileid = default;
 
 			//
 			// Make a file
