@@ -85,6 +85,16 @@ namespace Steamworks
 			return Internal.IsP2PPacketAvailable( ref size, channel );
 		}
 
+		public static bool GetP2PSessionStatus(SteamId remoteId, ref P2PSessionState sessionState) {
+			P2PSessionState_t state = new P2PSessionState_t();
+			bool result = Internal.GetP2PSessionState(remoteId, ref state);
+			sessionState = new P2PSessionState(state);
+			return result;
+		}
+
+		
+
+
 		/// <summary>
 		/// Reads in a packet that has been sent from another user via SendP2PPacket..
 		/// </summary>

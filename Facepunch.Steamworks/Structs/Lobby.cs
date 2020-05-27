@@ -36,6 +36,23 @@ namespace Steamworks.Data
 			SteamMatchmaking.Internal.LeaveLobby( Id );
 		}
 
+		public void KickFromLobby(SteamId steamId) {
+			SendChatString("Trying to kick a player.");
+			//Internal data of LobbyChatUpdate_t
+			// m_ulSteamIDLobby uint64
+			// m_ulSteamIDUserChanged uint64
+			// m_ulSteamIDMakingChange uint64
+			// m_rgfChatMemberStateChange uint32
+
+			List<byte> message = new List<byte>(LobbyChatUpdate_t.StructSize);
+			message.AddRange(BitConverter.GetBytes(Id));
+			message.AddRange(BitConverter.GetBytes(steamId));
+			message.AddRange(BitConverter.GetBytes(Id));
+			message.AddRange(BitConverter.GetBytes((uint)ChatMemberStateChange.Kicked));
+			byte[] data = message.ToArray();
+			SendChatBytes(data);
+		}
+
 		/// <summary>
 		/// Invite another user to the lobby
 		/// will return true if the invite is successfully sent, whether or not the target responds

@@ -92,8 +92,13 @@ namespace Steamworks
 			{
 				var readData = Internal.GetLobbyChatEntry( callback.SteamIDLobby, (int)callback.ChatID, ref steamid, (IntPtr)p, buffer.Length, ref chatEntryType );
 
-				if ( readData > 0 )
-				{
+				if ( readData > 0 ) {
+
+					LobbyChatUpdate_t updateRecieved = LobbyChatUpdate_t.Fill((IntPtr)p);
+					if (updateRecieved.GfChatMemberStateChange == (int)ChatMemberStateChange.Kicked) {
+						OnLobbyMemberKicked?.Invoke(new Lobby(updateRecieved.SteamIDLobby), new Friend(updateRecieved.SteamIDUserChanged), new Friend(updateRecieved.SteamIDMakingChange));
+						return;
+					}
 					OnChatMessage?.Invoke( new Lobby( callback.SteamIDLobby ), new Friend( steamid ), Encoding.UTF8.GetString( buffer, 0, readData ) );
 				}
 			}
