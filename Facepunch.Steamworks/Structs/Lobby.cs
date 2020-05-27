@@ -37,7 +37,6 @@ namespace Steamworks.Data
 		}
 
 		public void KickFromLobby(SteamId steamId) {
-			SendChatString("Trying to kick a player.");
 			//Internal data of LobbyChatUpdate_t
 			// m_ulSteamIDLobby uint64
 			// m_ulSteamIDUserChanged uint64
