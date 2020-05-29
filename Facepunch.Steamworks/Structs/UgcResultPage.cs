@@ -12,9 +12,6 @@ namespace Steamworks.Ugc
 
 		public bool CachedData;
 
-		internal bool ReturnsKeyValueTags;
-		internal bool ReturnsDefaultStats;
-
 		public IEnumerable<Item> Entries
 		{
 			get
@@ -27,44 +24,28 @@ namespace Steamworks.Ugc
 					{
 						var item = Item.From( details );
 
-
-						if ( ReturnsDefaultStats )
-						{
-							item.NumSubscriptions = GetStat( i, ItemStatistic.NumSubscriptions );
-							item.NumFavorites = GetStat( i, ItemStatistic.NumFavorites );
-							item.NumFollowers = GetStat( i, ItemStatistic.NumFollowers );
-							item.NumUniqueSubscriptions = GetStat( i, ItemStatistic.NumUniqueSubscriptions );
-							item.NumUniqueFavorites = GetStat( i, ItemStatistic.NumUniqueFavorites );
-							item.NumUniqueFollowers = GetStat( i, ItemStatistic.NumUniqueFollowers );
-							item.NumUniqueWebsiteViews = GetStat( i, ItemStatistic.NumUniqueWebsiteViews );
-							item.ReportScore = GetStat( i, ItemStatistic.ReportScore );
-							item.NumSecondsPlayed = GetStat( i, ItemStatistic.NumSecondsPlayed );
-							item.NumPlaytimeSessions = GetStat( i, ItemStatistic.NumPlaytimeSessions );
-							item.NumComments = GetStat( i, ItemStatistic.NumComments );
-							item.NumSecondsPlayedDuringTimePeriod = GetStat( i, ItemStatistic.NumSecondsPlayedDuringTimePeriod );
-							item.NumPlaytimeSessionsDuringTimePeriod = GetStat( i, ItemStatistic.NumPlaytimeSessionsDuringTimePeriod );
-						}
+						item.NumSubscriptions = GetStat( i, ItemStatistic.NumSubscriptions );
+						item.NumFavorites = GetStat( i, ItemStatistic.NumFavorites );
+						item.NumFollowers = GetStat( i, ItemStatistic.NumFollowers );
+						item.NumUniqueSubscriptions = GetStat( i, ItemStatistic.NumUniqueSubscriptions );
+						item.NumUniqueFavorites = GetStat( i, ItemStatistic.NumUniqueFavorites );
+						item.NumUniqueFollowers = GetStat( i, ItemStatistic.NumUniqueFollowers );
+						item.NumUniqueWebsiteViews = GetStat( i, ItemStatistic.NumUniqueWebsiteViews );
+						item.ReportScore = GetStat( i, ItemStatistic.ReportScore );
+						item.NumSecondsPlayed = GetStat( i, ItemStatistic.NumSecondsPlayed );
+						item.NumPlaytimeSessions = GetStat( i, ItemStatistic.NumPlaytimeSessions );
+						item.NumComments = GetStat( i, ItemStatistic.NumComments );
+						item.NumSecondsPlayedDuringTimePeriod = GetStat( i, ItemStatistic.NumSecondsPlayedDuringTimePeriod );
+						item.NumPlaytimeSessionsDuringTimePeriod = GetStat( i, ItemStatistic.NumPlaytimeSessionsDuringTimePeriod );
 
 						if ( SteamUGC.Internal.GetQueryUGCPreviewURL( Handle, i, out string preview ) )
 						{
 							item.PreviewImageUrl = preview;
 						}
 
-						if ( ReturnsKeyValueTags )
-						{
-							var keyValueTagsCount = SteamUGC.Internal.GetQueryUGCNumKeyValueTags( Handle, i );
-
-							item.KeyValueTags = new Dictionary<string, string>( (int)keyValueTagsCount );
-							for ( uint j = 0; j < keyValueTagsCount; j++ )
-							{
-								string key, value;
-								if ( SteamUGC.Internal.GetQueryUGCKeyValueTag( Handle, i, j, out key, out value ) )
-									item.KeyValueTags[key] = value;
-							}
-						}
-
 						// TODO GetQueryUGCAdditionalPreview
 						// TODO GetQueryUGCChildren
+						// TODO GetQueryUGCKeyValueTag
 						// TODO GetQueryUGCMetadata
 
 
