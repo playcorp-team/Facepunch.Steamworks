@@ -40,6 +40,11 @@ namespace Steamworks.Ugc
 		public string[] Tags { get; internal set; }
 
 		/// <summary>
+		/// A dictionary of key value tags for this item, only available from queries WithKeyValueTags(true)
+		/// </summary>
+		public Dictionary<string,string> KeyValueTags { get; internal set; }
+
+		/// <summary>
 		/// App Id of the app that created this item
 		/// </summary>
 		public AppId CreatorApp => details.CreatorAppID;
@@ -223,9 +228,12 @@ namespace Steamworks.Ugc
 											.GetPageAsync( 1 );
 
 			if ( !file.HasValue ) return null;
-			if ( file.Value.ResultCount == 0 ) return null;
+			using ( file.Value )
+			{
+				if ( file.Value.ResultCount == 0 ) return null;
 
-			return file.Value.Entries.First();
+				return file.Value.Entries.First();
+			}
 		}
 
 		internal static Item From( SteamUGCDetails_t details )
