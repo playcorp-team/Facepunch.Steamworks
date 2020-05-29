@@ -151,14 +151,6 @@ namespace Steamworks
 		    }
 		}
 
-		public static IEnumerable<Clan> GetClans()
-		{
-			for (int i = 0; i < Internal.GetClanCount(); i++)
-			{
-				yield return new Clan( Internal.GetClanByIndex( i ) );
-			}
-		}
-
 		/// <summary>
 		/// The dialog to open. Valid options are: 
 		/// "friends", 
