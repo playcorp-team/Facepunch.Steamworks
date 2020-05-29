@@ -126,6 +126,7 @@ namespace Steamworks
 			SteamParties.Shutdown();
 			SteamNetworkingUtils.Shutdown();
 			SteamNetworkingSockets.Shutdown();
+			SteamRemoteStorage.Shutdown();
 			ServerList.Base.Shutdown();
 		}
 
